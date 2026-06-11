@@ -6,6 +6,7 @@ import { marked } from 'marked';
 import SwaggerUI from 'swagger-ui-dist/swagger-ui-bundle.js';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github.css';
+import './floating-action.js';
 
 export class CodeViewer extends LitElement {
   static properties = {
@@ -233,9 +234,240 @@ export class CodeViewer extends LitElement {
     }
   }
 
+  handleExportHTML() {
+    const active = this.activeFile;
+    if (!active) return;
+
+    if (active.path.endsWith('.md')) {
+      this.exportMarkdownHTML(active);
+    } else {
+      this.exportSwaggerHTML(active);
+    }
+  }
+
+  exportSwaggerHTML(active) {
+    let entrypoint = active.path;
+    const isRootCandidate = entrypoint === 'openapi.yaml' || entrypoint.endsWith('/openapi.yaml') ||
+                            entrypoint === 'swagger.yaml' || entrypoint.endsWith('/swagger.yaml') ||
+                            entrypoint === 'openapi.json' || entrypoint.endsWith('/openapi.json') ||
+                            entrypoint === 'swagger.json' || entrypoint.endsWith('/swagger.json');
+    if (!isRootCandidate) {
+      const rootFile = this.files.find(f => 
+        f.type === 'file' && 
+        (f.path === 'openapi.yaml' || f.path.endsWith('/openapi.yaml') ||
+         f.path === 'swagger.yaml' || f.path.endsWith('/swagger.yaml') ||
+         f.path === 'openapi.json' || f.path.endsWith('/openapi.json') ||
+         f.path === 'swagger.json' || f.path.endsWith('/swagger.json'))
+      );
+      if (rootFile) {
+        entrypoint = rootFile.path;
+      }
+    }
+
+    const { spec } = resolverService.resolve(this.files, entrypoint);
+
+    if (!spec) {
+      alert('Could not resolve spec to export.');
+      return;
+    }
+
+    // Embed fully resolved specification JSON inline
+    const standaloneHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenStudio - Standalone Swagger Preview</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.8/swagger-ui.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5.11.8/swagger-ui-bundle.js"></script>
+  <script>
+    window.onload = () => {
+      window.ui = SwaggerUIBundle({
+        spec: ${JSON.stringify(spec)},
+        dom_id: '#swagger-ui',
+        deepLinking: true
+      });
+    };
+  </script>
+</body>
+</html>`;
+
+    const blob = new Blob([standaloneHtml], { type: 'text/html' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = active.path.split('/').pop().replace(/\.(yaml|yml|json)$/i, '') + '-preview.html';
+    link.click();
+  }
+
+  exportMarkdownHTML(active) {
+    const container = document.querySelector('.markdown-preview');
+    if (!container) {
+      alert('Markdown preview container not found in DOM.');
+      return;
+    }
+
+    const renderedHtml = container.innerHTML;
+    const filename = active.path.split('/').pop().replace(/\.md$/i, '');
+    const standaloneHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${filename} - Standalone Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.7;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+    h1, h2, h3, h4 {
+      margin-top: 1.8rem;
+      margin-bottom: 0.8rem;
+      font-weight: 700;
+      color: #111111;
+    }
+    h1 {
+      font-size: 2rem;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+    }
+    p {
+      margin-bottom: 1.2rem;
+    }
+    ul, ol {
+      margin-left: 2rem;
+      margin-bottom: 1.2rem;
+    }
+    li {
+      margin-bottom: 0.4rem;
+    }
+    a {
+      color: #14b8a6;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    pre {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.2rem;
+      margin-bottom: 1.2rem;
+      overflow-x: auto;
+    }
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9em;
+      background-color: #f1f5f9;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      color: #0f766e;
+    }
+    pre code {
+      background-color: transparent;
+      padding: 0;
+      color: #1a1a1a;
+    }
+    blockquote {
+      border-left: 4px solid #14b8a6;
+      padding: 0.8rem 1.2rem;
+      background-color: #f8fafc;
+      margin-bottom: 1.2rem;
+      font-style: italic;
+      border-radius: 0 4px 4px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+    th, td {
+      border: 1px solid #e2e8f0;
+      padding: 0.8rem;
+      text-align: left;
+    }
+    th {
+      background-color: #f1f5f9;
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    .mermaid, 
+    .plantuml-svg-container {
+      display: flex;
+      justify-content: center;
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    .plantuml-svg-container svg, 
+    .mermaid svg {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    ${renderedHtml}
+  </div>
+</body>
+</html>`;
+
+    const blob = new Blob([standaloneHtml], { type: 'text/html' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename + '-preview.html';
+    link.click();
+  }
+
+  handleExportPDF() {
+    window.print();
+  }
+
   render() {
     return html`
-      <div id="previewer-target" style="height: 100%; overflow: hidden;"></div>
+      <div class="code-viewer-container" style="position: relative; height: 100%; width: 100%; overflow: hidden;">
+        <div id="previewer-target" style="height: 100%; overflow: hidden;"></div>
+        
+        ${this.activeFile ? html`
+          <floating-action
+            @export-html=${this.handleExportHTML}
+            @export-pdf=${this.handleExportPDF}
+          ></floating-action>
+        ` : ''}
+      </div>
     `;
   }
 }

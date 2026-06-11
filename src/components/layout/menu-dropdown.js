@@ -3,9 +3,7 @@ import { projectManager } from '../../services/project-manager.js';
 
 export class MenuDropdown extends LitElement {
   static properties = {
-    currentKey: { type: String },
-    importMenuOpen: { type: Boolean },
-    exportMenuOpen: { type: Boolean },
+    currentKey: { type: String }
   };
 
   static styles = css`
@@ -90,15 +88,12 @@ export class MenuDropdown extends LitElement {
   constructor() {
     super();
     this.currentKey = '';
-    this.importMenuOpen = false;
-    this.exportMenuOpen = false;
   }
 
   // ZIP triggers
   triggerZipUpload() {
     this.shadowRoot.getElementById('zip-input').click();
     this.dispatchEvent(new CustomEvent('close-menu', { bubbles: true, composed: true }));
-    this.importMenuOpen = false;
   }
 
   async handleZipUpload(e) {
@@ -117,7 +112,6 @@ export class MenuDropdown extends LitElement {
   triggerFolderUpload() {
     this.shadowRoot.getElementById('folder-input').click();
     this.dispatchEvent(new CustomEvent('close-menu', { bubbles: true, composed: true }));
-    this.importMenuOpen = false;
   }
 
   async handleFolderUpload(e) {
@@ -164,70 +158,24 @@ export class MenuDropdown extends LitElement {
   handleExportZip() {
     projectManager.exportProjectZip();
     this.dispatchEvent(new CustomEvent('close-menu', { bubbles: true, composed: true }));
-    this.exportMenuOpen = false;
-  }
-
-  handleExportHTML() {
-    this.dispatchEvent(new CustomEvent('export-html', { bubbles: true, composed: true }));
-    this.dispatchEvent(new CustomEvent('close-menu', { bubbles: true, composed: true }));
-    this.exportMenuOpen = false;
-  }
-
-  handleExportPDF() {
-    window.print();
-    this.dispatchEvent(new CustomEvent('close-menu', { bubbles: true, composed: true }));
-    this.exportMenuOpen = false;
   }
 
   render() {
     return html`
-      <!-- Submenu for Import -->
-      <div 
-        class="dropdown-item dropdown-submenu-trigger" 
-        @mouseenter=${() => { this.importMenuOpen = true; this.exportMenuOpen = false; }}
-      >
-        <span>Import Workspace</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        
-        ${this.importMenuOpen ? html`
-          <div class="submenu" @mouseleave=${() => this.importMenuOpen = false}>
-            <button class="dropdown-item" @click=${this.triggerZipUpload}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              Load ZIP Archive
-            </button>
-            <button class="dropdown-item" @click=${this.triggerFolderUpload}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-              Load Folder
-            </button>
-          </div>
-        ` : ''}
-      </div>
+      <button class="dropdown-item" @click=${this.triggerFolderUpload}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <span>Load Folder</span>
+      </button>
 
-      <!-- Submenu for Export -->
-      <div 
-        class="dropdown-item dropdown-submenu-trigger" 
-        @mouseenter=${() => { this.exportMenuOpen = true; this.importMenuOpen = false; }}
-      >
-        <span>Export Output</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        
-        ${this.exportMenuOpen ? html`
-          <div class="submenu" @mouseleave=${() => this.exportMenuOpen = false}>
-            <button class="dropdown-item" @click=${this.handleExportZip}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              Export Editor (ZIP)
-            </button>
-            <button class="dropdown-item" @click=${this.handleExportHTML}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              Export Preview HTML
-            </button>
-            <button class="dropdown-item" @click=${this.handleExportPDF}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-              Export PDF / Print
-            </button>
-          </div>
-        ` : ''}
-      </div>
+      <button class="dropdown-item" @click=${this.triggerZipUpload}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Import Project (ZIP)</span>
+      </button>
+
+      <button class="dropdown-item" @click=${this.handleExportZip}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <span>Export Project (ZIP)</span>
+      </button>
 
       <div class="dropdown-divider"></div>
 

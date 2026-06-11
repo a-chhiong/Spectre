@@ -53,9 +53,6 @@ export class AppRoot extends LitElement {
     
     // Handle relative file jumps in editor or markdown previewer
     this.addEventListener('open-ref-file', this.handleOpenRefFile);
-    
-    // Handle standalone preview html export
-    this.addEventListener('export-html', this.handleExportHTML);
 
     // Bootstrap database and load active projects
     await projectManager.init();
@@ -66,7 +63,6 @@ export class AppRoot extends LitElement {
     this.subs.forEach(s => s.unsubscribe());
     this.removeEventListener('toggle-panel', this.handleTogglePanel);
     this.removeEventListener('open-ref-file', this.handleOpenRefFile);
-    this.removeEventListener('export-html', this.handleExportHTML);
   }
 
   handleTogglePanel(e) {
@@ -137,72 +133,7 @@ export class AppRoot extends LitElement {
     }
   }
 
-  handleExportHTML() {
-    const active = this.activeFile;
-    if (!active) return;
-    
-    let entrypoint = active.path;
-    const isRootCandidate = entrypoint === 'openapi.yaml' || entrypoint.endsWith('/openapi.yaml') ||
-                            entrypoint === 'swagger.yaml' || entrypoint.endsWith('/swagger.yaml') ||
-                            entrypoint === 'openapi.json' || entrypoint.endsWith('/openapi.json') ||
-                            entrypoint === 'swagger.json' || entrypoint.endsWith('/swagger.json');
-    if (!isRootCandidate) {
-      const rootFile = this.files.find(f => 
-        f.type === 'file' && 
-        (f.path === 'openapi.yaml' || f.path.endsWith('/openapi.yaml') ||
-         f.path === 'swagger.yaml' || f.path.endsWith('/swagger.yaml') ||
-         f.path === 'openapi.json' || f.path.endsWith('/openapi.json') ||
-         f.path === 'swagger.json' || f.path.endsWith('/swagger.json'))
-      );
-      if (rootFile) {
-        entrypoint = rootFile.path;
-      }
-    }
 
-    const { spec } = resolverService.resolve(this.files, entrypoint);
-
-    if (!spec) {
-      alert('Could not resolve spec to export.');
-      return;
-    }
-
-    // Embed fully resolved specification JSON inline
-    const standaloneHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OpenStudio - Standard OpenAPI Preview</title>
-  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.8/swagger-ui.css" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #fafafa;
-    }
-  </style>
-</head>
-<body>
-  <div id="swagger-ui"></div>
-  <script src="https://unpkg.com/swagger-ui-dist@5.11.8/swagger-ui-bundle.js"></script>
-  <script>
-    window.onload = () => {
-      window.ui = SwaggerUIBundle({
-        spec: ${JSON.stringify(spec)},
-        dom_id: '#swagger-ui',
-        deepLinking: true
-      });
-    };
-  </script>
-</body>
-</html>`;
-
-    const blob = new Blob([standaloneHtml], { type: 'text/html' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'swagger-preview.html';
-    link.click();
-  }
 
   render() {
     return html`
