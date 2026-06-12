@@ -2,15 +2,29 @@ import mermaid from 'mermaid';
 import { projectManager } from '../services/project-manager.js';
 
 // Cache for the loaded PlantUML render module
-let pumlRenderFn = null;
+let pumlModule = null;
 let pumlLoadingPromise = null;
+
+// Global queue for PlantUML rendering to prevent concurrent/overlapping TeaVM calls
+let pumlQueue = Promise.resolve();
+
+/**
+ * Queue a PlantUML task to run sequentially
+ * @param {Function} task Async function representing the rendering work
+ * @returns {Promise} Resolves when the task completes
+ */
+function enqueuePuml(task) {
+  const next = pumlQueue.then(() => task());
+  pumlQueue = next.catch(() => {});
+  return next;
+}
 
 /**
  * Promise-based loader for dynamic PlantUML javascript files
- * @returns {Promise<Function>} Resolves to the render function
+ * @returns {Promise<Object>} Resolves to the PlantUML module
  */
 function loadPlantUMLFiles() {
-  if (pumlRenderFn) return Promise.resolve(pumlRenderFn);
+  if (pumlModule) return Promise.resolve(pumlModule);
   if (pumlLoadingPromise) return pumlLoadingPromise;
 
   pumlLoadingPromise = new Promise((resolve, reject) => {
@@ -49,13 +63,38 @@ function loadPlantUMLCore(resolve, reject) {
   const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
   dynamicImport(`${cleanBase}vendor/plantuml/plantuml.js`)
     .then((module) => {
-      pumlRenderFn = module.render;
-      resolve(pumlRenderFn);
+      pumlModule = module;
+      resolve(pumlModule);
     })
     .catch((err) => {
       pumlLoadingPromise = null;
       reject(new Error('Failed to load plantuml.js module: ' + err.message));
     });
+}
+
+/**
+ * Render PlantUML lines to an SVG string using renderToString
+ * @param {string[]} lines Diagram lines
+ * @param {boolean} isDarkMode Current theme state
+ * @returns {Promise<string>} Resolves to SVG string
+ */
+function renderPumlToString(lines, isDarkMode) {
+  return new Promise((resolve, reject) => {
+    if (!pumlModule || typeof pumlModule.renderToString !== 'function') {
+      reject(new Error('PlantUML renderToString function is not loaded.'));
+      return;
+    }
+    try {
+      pumlModule.renderToString(
+        lines,
+        (svg) => resolve(svg),
+        (err) => reject(new Error(err)),
+        { dark: isDarkMode }
+      );
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 
 /**
@@ -140,7 +179,7 @@ export async function renderDiagrams(container, isDarkMode) {
       `;
 
       preNode.replaceWith(pumlDiv);
-      preNode.setAttribute('data-processed', 'true');
+      pumlDiv.setAttribute('data-processed', 'true');
 
       blocksToRender.push({
         containerId: uniqueId,
@@ -152,20 +191,24 @@ export async function renderDiagrams(container, isDarkMode) {
     if (blocksToRender.length > 0) {
       try {
         // Load compiler files dynamically
-        const renderFn = await loadPlantUMLFiles();
+        await loadPlantUMLFiles();
         
         for (const block of blocksToRender) {
-          block.element.innerHTML = ''; // Clear loading screen
-          try {
-            renderFn(block.lines, block.containerId, { dark: isDarkMode });
-            block.element.setAttribute('data-processed', 'true');
-          } catch (renderError) {
-            block.element.innerHTML = `
-              <div class="puml-error" style="color: var(--color-error, #f87171); padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px;">
-                Error rendering PlantUML: ${renderError.message}
-              </div>
-            `;
-          }
+          // Enqueue each block rendering sequentially on the global queue
+          await enqueuePuml(async () => {
+            block.element.innerHTML = ''; // Clear loading screen
+            try {
+              const svg = await renderPumlToString(block.lines, isDarkMode);
+              block.element.innerHTML = svg;
+              block.element.setAttribute('data-processed', 'true');
+            } catch (renderError) {
+              block.element.innerHTML = `
+                <div class="puml-error" style="color: var(--color-error, #f87171); padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                  Error rendering PlantUML: ${renderError.message}
+                </div>
+              `;
+            }
+          });
         }
       } catch (err) {
         console.error('Error loading or running PlantUML:', err);

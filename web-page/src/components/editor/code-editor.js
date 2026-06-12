@@ -18,7 +18,7 @@ import {
   specStudioEditorTheme,
   specStudioHighlightStyle,
   refLinkPlugin
-} from '../../services/high-light.js';
+} from '../../utils/highlight-handler.js';
 
 // All highlight infrastructure (language modes, theme, styles, decorators)
 // has been extracted to high-light.js and imported above.
