@@ -1,0 +1,124 @@
+{
+  "name": "openstudio",
+  "displayName": "OpenStudio",
+  "description": "Preview Markdown, PlantUML, Mermaid diagrams, and OpenAPI specs directly in VS Code with syntax highlighting, zoom, and export.",
+  "version": "0.1.0",
+  "publisher": "a-chhiong",
+  "icon": "media/icons/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other", "Visualization"],
+  "keywords": ["markdown", "plantuml", "mermaid", "openapi", "swagger", "preview", "diagram"],
+  "activationEvents": [
+    "onCommand:openstudio.openPreview"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "openstudio.openPreview",
+        "title": "OpenStudio: Open Preview",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "openstudio.exportSVG",
+        "title": "OpenStudio: Export as SVG",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "openstudio.exportPNG",
+        "title": "OpenStudio: Export as PNG",
+        "icon": "$(file-media)"
+      },
+      {
+        "command": "openstudio.exportHTML",
+        "title": "OpenStudio: Export as HTML",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "openstudio.exportPDF",
+        "title": "OpenStudio: Export as PDF",
+        "icon": "$(file-pdf)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "openstudio.openPreview",
+          "when": "resourceExtname =~ /^\\.(md|markdown|puml|plantuml|pu|mmd|mermaid|yaml|yml|json)$/",
+          "group": "navigation@1"
+        },
+        {
+          "command": "openstudio.exportSVG",
+          "when": "openstudio.previewActive && openstudio.contentType =~ /^(plantuml|mermaid)$/",
+          "group": "openstudio.export@1"
+        },
+        {
+          "command": "openstudio.exportPNG",
+          "when": "openstudio.previewActive && openstudio.contentType =~ /^(plantuml|mermaid)$/",
+          "group": "openstudio.export@2"
+        },
+        {
+          "command": "openstudio.exportHTML",
+          "when": "openstudio.previewActive",
+          "group": "openstudio.export@3"
+        },
+        {
+          "command": "openstudio.exportPDF",
+          "when": "openstudio.previewActive",
+          "group": "openstudio.export@4"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "openstudio.exportSVG",
+          "when": "openstudio.previewActive"
+        },
+        {
+          "command": "openstudio.exportPNG",
+          "when": "openstudio.previewActive"
+        },
+        {
+          "command": "openstudio.exportHTML",
+          "when": "openstudio.previewActive"
+        },
+        {
+          "command": "openstudio.exportPDF",
+          "when": "openstudio.previewActive"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "openstudio.openPreview",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "resourceExtname =~ /^\\.(md|markdown|puml|plantuml|pu|mmd|mermaid|yaml|yml|json)$/"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc --noEmit",
+    "build": "node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch",
+    "lint": "eslint src --ext .ts,.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "esbuild": "^0.21.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.0",
+    "@vscode/vsce": "^2.24.0"
+  },
+  "dependencies": {
+    "highlight.js": "^11.11.1",
+    "js-yaml": "^4.1.0",
+    "marked": "^12.0.1",
+    "mermaid": "^10.9.0"
+  }
+}
