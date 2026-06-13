@@ -191,7 +191,7 @@ export class AppHeader extends LitElement {
     return html`
       <div class="brand">
         <div class="logo">O</div>
-        <div class="title">OpenStudio</div>
+        <div class="title">Open-Studio</div>
       </div>
 
       <div class="controls">

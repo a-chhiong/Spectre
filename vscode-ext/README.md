@@ -74,7 +74,7 @@ To package the extension into a `.vsix` file for local distribution or manual in
 npm run build
 npm run package
 ```
-A file named **`openstudio-0.1.0.vsix`** will be created in the root directory.
+A file named **`open-studio-x.x.x.vsix`** will be created in the root directory.
 
 ---
 

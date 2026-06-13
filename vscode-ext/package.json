@@ -1,8 +1,8 @@
 {
-  "name": "openstudio",
-  "displayName": "OpenStudio",
+  "name": "open-studio",
+  "displayName": "Open-Studio",
   "description": "Preview Markdown, PlantUML, Mermaid diagrams, and OpenAPI specs directly in VS Code with syntax highlighting, zoom, and export.",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "publisher": "a-chhiong",
   "icon": "media/icons/icon.png",
   "engines": {
@@ -31,14 +31,29 @@
     "languages": [
       {
         "id": "mermaid",
-        "aliases": ["Mermaid", "mermaid"],
-        "extensions": [".mmd", ".mermaid"],
+        "aliases": [
+          "Mermaid",
+          "mermaid"
+        ],
+        "extensions": [
+          ".mmd",
+          ".mermaid"
+        ],
         "configuration": "./language-configuration/mermaid.json"
       },
       {
         "id": "plantuml",
-        "aliases": ["PlantUML", "plantuml", "puml", "pu"],
-        "extensions": [".puml", ".pu", ".plantuml"],
+        "aliases": [
+          "PlantUML",
+          "plantuml",
+          "puml",
+          "pu"
+        ],
+        "extensions": [
+          ".puml",
+          ".pu",
+          ".plantuml"
+        ],
         "configuration": "./language-configuration/plantuml.json"
       }
     ],
@@ -51,7 +66,9 @@
       {
         "scopeName": "markdown.mermaid.codeblock",
         "path": "./syntaxes/markdown-mermaid.tmLanguage.json",
-        "injectTo": ["text.html.markdown"],
+        "injectTo": [
+          "text.html.markdown"
+        ],
         "embeddedLanguages": {
           "meta.embedded.block.mermaid": "mermaid"
         }
@@ -64,7 +81,9 @@
       {
         "scopeName": "markdown.plantuml.codeblock",
         "path": "./syntaxes/markdown-plantuml.tmLanguage.json",
-        "injectTo": ["text.html.markdown"],
+        "injectTo": [
+          "text.html.markdown"
+        ],
         "embeddedLanguages": {
           "meta.embedded.block.plantuml": "plantuml"
         }
@@ -158,6 +177,7 @@
     "build": "node esbuild.config.mjs",
     "watch": "node esbuild.config.mjs --watch",
     "lint": "eslint src --ext .ts,.js",
+    "prepackage": "node -e \"require('fs').copyFileSync('../LICENSE', 'LICENSE')\"",
     "package": "vsce package"
   },
   "devDependencies": {
