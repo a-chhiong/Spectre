@@ -149,6 +149,7 @@ body,
   flex-shrink: 0;
   height: 36px;
   user-select: none;
+  z-index: 300;
 }
 
 .os-toolbar .filename {
@@ -455,7 +456,7 @@ body,
   min-width: 150px;
   padding: 5px;
   animation: os-slide-down 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 100;
+  z-index: 9999;
 }
 
 .os-export-item {

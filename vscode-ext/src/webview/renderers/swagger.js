@@ -74,7 +74,7 @@ export function renderSwagger(container, content, filePath) {
 function mountSwagger(spec) {
   try {
     // eslint-disable-next-line no-undef
-    swaggerInstance = SwaggerUIBundle({
+    window.ui = SwaggerUIBundle({
       spec,
       dom_id: '#swagger-ui',
       deepLinking: true,
@@ -85,6 +85,7 @@ function mountSwagger(spec) {
         SwaggerUIBundle.SwaggerUIStandalonePreset,
       ],
     });
+    swaggerInstance = window.ui;
   } catch (err) {
     const el = document.getElementById('swagger-ui');
     if (el) { el.innerHTML = `<div class="os-error">Swagger UI error: ${err.message}</div>`; }

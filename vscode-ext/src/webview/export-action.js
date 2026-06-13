@@ -59,10 +59,14 @@ export class ExportAction {
         const item = document.createElement('button');
         item.className = 'os-export-item';
         item.innerHTML = `${opt.icon} <span>${opt.label}</span>`;
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
           this._open = false;
-          this._render();
-          handleExport(opt.format, this._getPreview());
+          const preview = this._getPreview();
+          handleExport(opt.format, preview);
+          // Defer render to allow the click event loop to finish normally
+          setTimeout(() => this._render(), 0);
         });
         menu.appendChild(item);
       });
@@ -87,7 +91,7 @@ export class ExportAction {
 
   _attachOutsideClick() {
     document.addEventListener('click', e => {
-      if (this._open && !this._root.contains(e.target)) {
+      if (this._open && !e.composedPath().includes(this._root)) {
         this._open = false;
         this._render();
       }

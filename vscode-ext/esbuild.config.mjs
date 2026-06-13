@@ -1,4 +1,6 @@
 import esbuild from 'esbuild';
+import fs from 'fs';
+import path from 'path';
 
 const isWatch = process.argv.includes('--watch');
 
@@ -43,3 +45,17 @@ if (isWatch) {
   ]);
   console.log('[esbuild] Build complete.');
 }
+
+// ─── 3. Copy Assets ────────────────────────────────────────────────────────
+const swaggerDist = 'node_modules/swagger-ui-dist';
+const swaggerOut = 'out/webview/vendor/swagger';
+fs.mkdirSync(swaggerOut, { recursive: true });
+fs.copyFileSync(path.join(swaggerDist, 'swagger-ui-bundle.js'), path.join(swaggerOut, 'swagger-ui-bundle.js'));
+fs.copyFileSync(path.join(swaggerDist, 'swagger-ui.css'), path.join(swaggerOut, 'swagger-ui.css'));
+
+const rapipdfDist = 'node_modules/rapipdf/dist';
+const rapipdfOut = 'out/webview/vendor/rapipdf';
+fs.mkdirSync(rapipdfOut, { recursive: true });
+fs.copyFileSync(path.join(rapipdfDist, 'rapipdf-min.js'), path.join(rapipdfOut, 'rapipdf-min.js'));
+
+console.log('[esbuild] Copied vendor assets.');

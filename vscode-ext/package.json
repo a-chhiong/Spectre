@@ -2,7 +2,7 @@
   "name": "open-studio",
   "displayName": "Open-Studio",
   "description": "Preview Markdown, PlantUML, Mermaid diagrams, and OpenAPI specs directly in VS Code with syntax highlighting, zoom, and export.",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "publisher": "a-chhiong",
   "icon": "media/icons/icon.png",
   "engines": {
@@ -195,6 +195,8 @@
     "highlight.js": "^11.11.1",
     "js-yaml": "^4.1.0",
     "marked": "^12.0.1",
-    "mermaid": "^10.9.0"
+    "mermaid": "^10.9.0",
+    "rapipdf": "^2.2.1",
+    "swagger-ui-dist": "latest"
   }
 }

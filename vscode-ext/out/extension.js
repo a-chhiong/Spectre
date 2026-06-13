@@ -2554,7 +2554,7 @@ var PreviewPanel = class _PreviewPanel {
         await this._saveExport(msg, "HTML files", ["html"], msg.suggestedName ?? "preview.html");
         break;
       case "export-pdf":
-        this._panel.webview.postMessage({ type: "print" });
+        await this._saveExport(msg, "PDF files", ["pdf"], msg.suggestedName ?? "preview.pdf", true);
         break;
     }
   }
@@ -2562,8 +2562,14 @@ var PreviewPanel = class _PreviewPanel {
     if (!msg.data) {
       return;
     }
+    let defaultUri;
+    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+      defaultUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, defaultName);
+    } else {
+      defaultUri = vscode.Uri.file(defaultName);
+    }
     const saveUri = await vscode.window.showSaveDialog({
-      defaultUri: vscode.Uri.file(defaultName),
+      defaultUri,
       filters: { [filterLabel]: extensions }
     });
     if (!saveUri) {
@@ -2571,7 +2577,7 @@ var PreviewPanel = class _PreviewPanel {
     }
     let buffer;
     if (isBase64) {
-      const base64 = msg.data.replace(/^data:[^;]+;base64,/, "");
+      const base64 = msg.data.replace(/^data:[^,]+,/, "");
       buffer = Buffer.from(base64, "base64");
     } else {
       buffer = Buffer.from(msg.data, "utf-8");
@@ -2591,6 +2597,15 @@ var PreviewPanel = class _PreviewPanel {
     const vendorBaseUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "vendor", "plantuml")
     );
+    const swaggerBundleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "out", "webview", "vendor", "swagger", "swagger-ui-bundle.js")
+    );
+    const swaggerCssUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "out", "webview", "vendor", "swagger", "swagger-ui.css")
+    );
+    const rapiPdfUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "out", "webview", "vendor", "rapipdf", "rapipdf-min.js")
+    );
     const nonce = getNonce();
     return (
       /* html */
@@ -2605,14 +2620,15 @@ var PreviewPanel = class _PreviewPanel {
              style-src 'unsafe-inline' ${webview.cspSource} https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com;
              img-src ${webview.cspSource} data: blob: https://unpkg.com;
              font-src ${webview.cspSource} https://fonts.gstatic.com https://unpkg.com;
-             connect-src 'none';">
+             connect-src blob:;">
   <title>OpenStudio Preview</title>
   <link rel="stylesheet" href="${cssUri}">
   <script nonce="${nonce}">
     window.__ASSETS__ = {
       vendorBase: '${vendorBaseUri}',
-      swaggerBundleUri: 'https://unpkg.com/swagger-ui-dist@5.11.8/swagger-ui-bundle.js',
-      swaggerCssUri: 'https://unpkg.com/swagger-ui-dist@5.11.8/swagger-ui.css',
+      swaggerBundleUri: '${swaggerBundleUri}',
+      swaggerCssUri: '${swaggerCssUri}',
+      rapiPdfUri: '${rapiPdfUri}',
     };
   </script>
 </head>
@@ -2718,6 +2734,10 @@ function resolveRefNode(node, baseDir, visited) {
       }
       try {
         const fileContent = fs.readFileSync(resolvedPath, "utf8");
+        const ext = path.extname(resolvedPath).toLowerCase();
+        if (ext === ".md" || ext === ".markdown" || ext === ".txt" || ext === ".html") {
+          return fileContent;
+        }
         const isJson = resolvedPath.endsWith(".json");
         const fileSpec = isJson ? JSON.parse(fileContent) : load(fileContent);
         const nextVisited = new Set(visited);

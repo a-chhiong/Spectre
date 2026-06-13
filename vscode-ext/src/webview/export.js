@@ -2,11 +2,16 @@
 // Shared by both the floating ⋮ button and the VS Code command palette.
 // Collects rendered output from the DOM, serializes it, then posts to the
 // extension host which handles the save dialog + file write.
-
+// import html2pdf from 'html2pdf.js'; // REMOVED: Replaced by window.print() temporarily
 /** @type {string} Current content type: 'markdown'|'plantuml'|'mermaid'|'swagger'|'' */
 let _contentType = '';
+let _fileName = 'preview';
 
 export function setContentType(ct) { _contentType = ct; }
+export function setFileName(name) {
+  const lastDot = name.lastIndexOf('.');
+  _fileName = lastDot > 0 ? name.substring(0, lastDot) : name;
+}
 
 /**
  * Entry point — called from both the ⋮ button and trigger-export messages.
@@ -19,7 +24,7 @@ export async function handleExport(format, previewArea) {
       case 'svg':  await exportSVG(previewArea);  break;
       case 'png':  await exportPNG(previewArea);  break;
       case 'html': await exportHTML(previewArea); break;
-      case 'pdf':  exportPDF();                   break;
+      case 'pdf':  exportPDF(previewArea);        break;
       default:
         console.warn('[export] Unknown format:', format);
     }
@@ -55,7 +60,7 @@ async function exportSVG(area) {
   }
 
   const data = new XMLSerializer().serializeToString(clone);
-  post('export-svg', data, 'diagram.svg');
+  post('export-svg', data, `${_fileName}-preview.svg`);
 }
 
 // ── PNG ────────────────────────────────────────────────────────────────────────
@@ -65,7 +70,7 @@ async function exportPNG(area) {
 
   const canvas = await svgToCanvas(svg);
   const data   = canvas.toDataURL('image/png');
-  post('export-png', data, 'diagram.png', true);
+  post('export-png', data, `${_fileName}-preview.png`, true);
 }
 
 async function svgToCanvas(svg) {
@@ -94,11 +99,19 @@ async function svgToCanvas(svg) {
 async function exportHTML(area) {
   if (!area) { throw new Error('Preview area not found.'); }
   const inner = area.innerHTML;
-  const data  = buildStandaloneHTML(inner, _contentType);
-  post('export-html', data, 'preview.html');
+  let rawContent = null;
+  if (_contentType === 'swagger') {
+    if (window.ui && window.ui.specSelectors) {
+      rawContent = JSON.stringify(window.ui.specSelectors.specJson().toJS());
+    } else {
+      rawContent = '{}';
+    }
+  }
+  const data  = buildStandaloneHTML(inner, _contentType, rawContent);
+  post('export-html', data, `${_fileName}-preview.html`);
 }
 
-function buildStandaloneHTML(bodyContent, contentType) {
+function buildStandaloneHTML(bodyContent, contentType, rawContent) {
   const isDiagram = contentType === 'plantuml' || contentType === 'mermaid';
   const isSwagger = contentType === 'swagger';
 
@@ -111,12 +124,12 @@ function buildStandaloneHTML(bodyContent, contentType) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css"/>
-${isSwagger ? '  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.8/swagger-ui.css"/>' : ''}
+${isSwagger ? '  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@latest/swagger-ui.css"/>' : ''}
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     body { margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif;
-           background: #ffffff; color: #1a1a1a; line-height: 1.7; }
-    .container { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+           background: ${isSwagger ? '#fafafa' : '#ffffff'}; color: #1a1a1a; line-height: 1.7; }
+${!isSwagger ? `    .container { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem; }
     h1,h2,h3,h4 { margin-top: 1.8rem; margin-bottom: 0.7rem; font-weight: 700; color: #111; }
     h1 { font-size: 2rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.4rem; }
     h2 { font-size: 1.5rem; } h3 { font-size: 1.2rem; }
@@ -139,7 +152,7 @@ ${isSwagger ? '  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@
       display: flex; justify-content: center; margin: 2rem 0;
       padding: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0;
       border-radius: 8px; overflow-x: auto; }
-    .mermaid svg, .plantuml-svg-container svg { max-width: 100%; height: auto; }
+    .mermaid svg, .plantuml-svg-container svg { max-width: 100%; height: auto; }` : ''}
     ${isDiagram ? '.diagram-container { display:flex; justify-content:center; align-items:center; min-height:100vh; padding:2rem; }' : ''}
   </style>
 </head>
@@ -148,8 +161,15 @@ ${isSwagger ? '  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@
     ? `<div class="diagram-container">${bodyContent}</div>`
     : isSwagger
       ? `<div id="swagger-ui-export"></div>
-  <script src="https://unpkg.com/swagger-ui-dist@5.11.8/swagger-ui-bundle.js"><\/script>
-  <script>window.onload = () => { ${bodyContent} };<\/script>`
+  <script src="https://unpkg.com/swagger-ui-dist@latest/swagger-ui-bundle.js"></script>
+  <script>
+    window.onload = () => {
+      SwaggerUIBundle({
+        spec: ${rawContent},
+        dom_id: '#swagger-ui-export'
+      });
+    };
+  </script>`
       : `<div class="container">${bodyContent}</div>`
   }
 ${isDiagram ? '<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"><\/script><script>mermaid.initialize({startOnLoad:true});<\/script>' : ''}
@@ -158,9 +178,86 @@ ${isDiagram ? '<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.mi
 }
 
 // ── PDF ────────────────────────────────────────────────────────────────────────
-function exportPDF() {
-  // Extension host will bounce back a 'print' message → window.print()
-  post('export-pdf', '', '');
+function exportPDF(area) {
+  if (!area) return;
+  
+  if (_contentType === 'swagger') {
+    if (!window.customElements.get('rapi-pdf')) {
+      const script = document.createElement('script');
+      script.src = window.__ASSETS__.rapiPdfUri;
+      script.onload = () => triggerRapiPdf();
+      document.head.appendChild(script);
+    } else {
+      triggerRapiPdf();
+    }
+  } else {
+    // Temporarily use window.print() while we evaluate Swagger2Markup/Node alternatives.
+    window.print();
+  }
+}
+
+function triggerRapiPdf() {
+  let spec = {};
+  if (window.ui && window.ui.specSelectors) {
+    spec = window.ui.specSelectors.specJson().toJS();
+  }
+  
+  const rapiPdf = document.createElement('rapi-pdf');
+  rapiPdf.style.display = 'none';
+  document.body.appendChild(rapiPdf);
+  
+  setTimeout(() => {
+    // RapiPDF natively calls pdfMake.open(), which triggers window.open('', '_blank').
+    // In VS Code's sandboxed Webview, this is blocked (returns null), causing it to fail.
+    // We mock window.open to return a fake window object, satisfying pdfMake.
+    // When pdfMake assigns the generated Blob URL to `mockWin.location.href`, we intercept it!
+    const originalWindowOpen = window.open;
+    let intercepted = false;
+
+    window.open = function(url, target, features) {
+      const mockWin = {
+        location: {
+          set href(val) {
+            if (val && val.startsWith('blob:')) {
+              intercepted = true;
+              fetch(val)
+                .then(res => res.blob())
+                .then(blob => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    post('export-pdf', reader.result, `${_fileName}-preview.pdf`, true);
+                    window.open = originalWindowOpen;
+                    rapiPdf.remove();
+                  };
+                  reader.readAsDataURL(blob);
+                })
+                .catch(err => {
+                  console.error('Failed to read blob:', err);
+                  window.open = originalWindowOpen;
+                });
+            }
+          }
+        }
+      };
+      return mockWin;
+    };
+
+    try {
+      rapiPdf.generatePdf(spec);
+    } catch (err) {
+      console.error('RapiPDF generation failed:', err);
+      post('error', err.message, '');
+      window.open = originalWindowOpen;
+    }
+    
+    // Fallback cleanup if not intercepted within 30 seconds
+    setTimeout(() => {
+      if (!intercepted) {
+        window.open = originalWindowOpen;
+        rapiPdf.remove();
+      }
+    }, 30000);
+  }, 100);
 }
 
 // ── Helper ─────────────────────────────────────────────────────────────────────

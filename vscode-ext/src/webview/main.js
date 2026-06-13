@@ -8,7 +8,7 @@ import { renderDiagrams }   from './renderers/diagram.js';
 import { renderSwagger }    from './renderers/swagger.js';
 import { attachZoom, detachZoom } from './zoom.js';
 import { ExportAction }   from './export-action.js';
-import { handleExport, setContentType } from './export.js';
+import { handleExport, setContentType, setFileName } from './export.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  VS Code API
@@ -128,6 +128,7 @@ async function updatePreview(filePath, content, contentType) {
 
   // Update export state
   setContentType(contentType);
+  setFileName(filename);
   exportAction.setContentType(contentType);
 
   // Detach zoom from the inner diagram-preview div before replacing content
