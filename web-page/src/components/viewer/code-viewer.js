@@ -776,7 +776,88 @@ export class CodeViewer extends LitElement {
    * Export PDF (uses browser print)
    */
   handleExportPDF = () => {
-    window.print();
+    if (this.currentContentType === 'swagger') {
+      import('rapipdf/dist/rapipdf-min.js').then(() => {
+        let entrypoint = this.activeFile.path;
+        const isRootCandidate = entrypoint === 'openapi.yaml' || entrypoint.endsWith('/openapi.yaml') ||
+          entrypoint === 'swagger.yaml' || entrypoint.endsWith('/swagger.yaml') ||
+          entrypoint === 'openapi.json' || entrypoint.endsWith('/openapi.json') ||
+          entrypoint === 'swagger.json' || entrypoint.endsWith('/swagger.json');
+        if (!isRootCandidate) {
+          const rootFile = this.files.find(f =>
+            f.type === 'file' &&
+            (f.path === 'openapi.yaml' || f.path.endsWith('/openapi.yaml') ||
+              f.path === 'swagger.yaml' || f.path.endsWith('/swagger.yaml') ||
+              f.path === 'openapi.json' || f.path.endsWith('/openapi.json') ||
+              f.path === 'swagger.json' || f.path.endsWith('/swagger.json'))
+          );
+          if (rootFile) {
+            entrypoint = rootFile.path;
+          }
+        }
+
+        const { spec } = resolverService.resolve(this.files, entrypoint);
+
+        if (!spec) {
+          alert('Could not resolve spec to export.');
+          return;
+        }
+
+        const rapiPdf = document.createElement('rapi-pdf');
+        rapiPdf.style.display = 'none';
+        document.body.appendChild(rapiPdf);
+        
+        setTimeout(() => {
+          // Just like in the VS Code extension, RapiPDF uses pdfMake which attempts
+          // to call window.open('', '_blank') asynchronously. Modern browsers will
+          // often block this as a popup. We intercept it and force a native download instead!
+          const originalWindowOpen = window.open;
+          let intercepted = false;
+
+          window.open = function(url, target, features) {
+            const mockWin = {
+              location: {
+                set href(val) {
+                  if (val && val.startsWith('blob:')) {
+                    intercepted = true;
+                    // Force a direct download instead of opening a popup
+                    const a = document.createElement('a');
+                    a.href = val;
+                    const name = this.activeFile && this.activeFile.path ? this.activeFile.path.split('/').pop().replace(/\.(yaml|yml|json)$/i, '') : 'api';
+                    a.download = name + '-preview.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+
+                    window.open = originalWindowOpen;
+                    rapiPdf.remove();
+                  }
+                }
+              }
+            };
+            return mockWin;
+          };
+
+          try {
+            rapiPdf.generatePdf(spec);
+          } catch (err) {
+            console.error('RapiPDF generation failed:', err);
+            alert('PDF generation failed: ' + err.message);
+            window.open = originalWindowOpen;
+          }
+
+          // Cleanup fallback
+          setTimeout(() => {
+            if (!intercepted) {
+              window.open = originalWindowOpen;
+              rapiPdf.remove();
+            }
+          }, 30000);
+        }, 100);
+      });
+    } else {
+      window.print();
+    }
   };
 
   /**
