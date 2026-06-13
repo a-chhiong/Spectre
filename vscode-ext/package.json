@@ -2,7 +2,7 @@
   "name": "open-studio",
   "displayName": "Open-Studio",
   "description": "Preview Markdown, PlantUML, Mermaid diagrams, and OpenAPI specs directly in VS Code with syntax highlighting, zoom, and export.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "a-chhiong",
   "icon": "media/icons/icon.png",
   "engines": {
