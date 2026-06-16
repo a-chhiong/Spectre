@@ -14,6 +14,7 @@ import './components/editor/tab-bar.js';
 import './components/editor/code-editor.js';
 import './components/viewer/code-viewer.js';
 import './components/viewer/tool-bar.js';
+import './components/viewer/diagram-viewer.js';
 import './components/layout/menu-dropdown.js';
 import './components/layout/panel-toggles.js';
 import './components/common/app-dialog.js';
@@ -120,10 +121,14 @@ export class AppRoot extends LitElement {
 
     const resolved = resolvePath(active.path, refPath);
     
-    // Check if resolved file exists
-    const fileExists = this.files.find(f => f.path === resolved && f.type === 'file');
+    // Check if resolved file exists (exact or with common extensions like .dbml)
+    let fileExists = this.files.find(f => f.path === resolved && f.type === 'file');
+    if (!fileExists) {
+      fileExists = this.files.find(f => f.path === resolved + '.dbml' && f.type === 'file');
+    }
+    
     if (fileExists) {
-      projectManager.openTab(resolved);
+      projectManager.openTab(fileExists.path);
     } else {
       // If file doesn't exist, prompt to create it! (Super user-friendly!)
       if (confirm(`Referenced file "${resolved}" does not exist. Would you like to create it?`)) {

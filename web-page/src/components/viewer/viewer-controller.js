@@ -5,6 +5,8 @@ import { renderDiagrams } from '../../utils/diagram-processor.js';
 import { marked } from 'marked';
 import SwaggerUI from 'swagger-ui-dist/swagger-ui-bundle.js';
 import hljs from 'highlight.js';
+import { Parser } from '@dbml/core';
+import { compileDbmlToMarkdown } from '../../utils/dbml-converter.js';
 
 export class ViewerController {
   constructor(host) {
@@ -207,18 +209,19 @@ export class ViewerController {
   updatePreview() {
     const container = document.getElementById('previewer-target');
     if (!container) return;
-
+ 
     if (!this.host.activeFile) {
       this.showPlaceholder(container, "No active preview. Select a spec or document.");
       return;
     }
-
+ 
     const path = this.host.activeFile.path.toLowerCase();
     const isMarkdown = path.endsWith('.md') || path.endsWith('.markdown');
     const isPuml = path.endsWith('.puml') || path.endsWith('.plantuml') || path.endsWith('.pu');
     const isMermaid = path.endsWith('.mermaid') || path.endsWith('.mmd');
     const isYamlOrJson = path.endsWith('.yaml') || path.endsWith('.yml') || path.endsWith('.json');
-
+    const isDbml = path.endsWith('.dbml');
+ 
     if (isMarkdown) {
       this.host.currentContentType = 'markdown';
       this.renderMarkdownPreview(container);
@@ -231,10 +234,13 @@ export class ViewerController {
     } else if (isYamlOrJson) {
       this.host.currentContentType = 'swagger';
       this.renderSwaggerPreview(container);
+    } else if (isDbml) {
+      this.host.currentContentType = 'dbml';
+      this.renderDbmlPreview(container);
     } else {
       this.showPlaceholder(container, `No preview available for "${this.host.activeFile.path.split('/').pop()}".`);
     }
-
+ 
     this.host.requestUpdate();
   }
 
@@ -242,13 +248,13 @@ export class ViewerController {
     try {
       const preprocessedText = this.preprocessImports(this.host.activeFile.content, this.host.activeFile.path);
       const htmlContent = marked.parse(preprocessedText || '');
-
+ 
       container.innerHTML = `
         <div class="markdown-preview">
           ${htmlContent}
         </div>
       `;
-
+ 
       container.querySelectorAll('.markdown-preview pre code').forEach((block) => {
         const isDiagram = block.classList.contains('language-mermaid') ||
           block.classList.contains('language-plantuml') ||
@@ -257,10 +263,10 @@ export class ViewerController {
           hljs.highlightElement(block);
         }
       });
-
+ 
       this.showLoaderOverlay(container);
       await new Promise(r => setTimeout(r, 10));
-
+ 
       const isDark = this.host.theme === 'dark';
       await renderDiagrams(container.querySelector('.markdown-preview'), isDark);
     } catch (err) {
@@ -274,23 +280,67 @@ export class ViewerController {
     }
   }
 
-  async renderPlantumlPreview(container) {
+  async renderDbmlPreview(container) {
     try {
-      const escapedText = this.escapeHTML(this.host.activeFile.content || '');
+      const parser = new Parser();
+      
+      // Register all virtual workspace files
+      for (const file of this.host.files) {
+        if (file.type === 'file') {
+          const absPath = file.path.startsWith('/') ? file.path : '/' + file.path;
+          parser.setDbmlSource(absPath, file.content || '');
+          
+          if (absPath.endsWith('.dbml')) {
+            const extensionless = absPath.slice(0, -5);
+            parser.setDbmlSource(extensionless, file.content || '');
+          }
+        }
+      }
+ 
+      const activeFile = this.host.activeFile;
+      const activeAbsPath = activeFile.path.startsWith('/') ? activeFile.path : '/' + activeFile.path;
+      const filename = activeFile.path.split('/').pop();
+ 
+      // Look for parent index.dbml in workspace
+      const parentFile = this.host.files.find(f => f.type === 'file' && f.path.toLowerCase().endsWith('index.dbml'));
+      let compilePath = activeAbsPath;
+      if (parentFile) {
+        compilePath = parentFile.path.startsWith('/') ? parentFile.path : '/' + parentFile.path;
+      }
+ 
+      const database = parser.parseDbmlProject(compilePath);
+      const markdownContent = compileDbmlToMarkdown(database, filename, activeAbsPath);
+      const htmlContent = marked.parse(markdownContent || '');
+ 
       container.innerHTML = `
-        <div class="plantuml-preview" style="padding: 1.5rem; height: 100%; overflow: auto;">
-          <pre><code class="language-plantuml">${escapedText}</code></pre>
+        <div class="markdown-preview dbml-preview">
+          ${htmlContent}
         </div>
       `;
+ 
+      container.querySelectorAll('.markdown-preview pre code').forEach((block) => {
+        const isDiagram = block.classList.contains('language-mermaid') ||
+          block.classList.contains('language-plantuml') ||
+          block.classList.contains('language-puml');
+        if (!isDiagram) {
+          hljs.highlightElement(block);
+        }
+      });
+ 
       this.showLoaderOverlay(container);
       await new Promise(r => setTimeout(r, 10));
-
+ 
       const isDark = this.host.theme === 'dark';
-      await renderDiagrams(container.querySelector('.plantuml-preview'), isDark);
+      await renderDiagrams(container.querySelector('.markdown-preview'), isDark);
     } catch (err) {
+      console.error(err);
+      let errorMsg = err.message || 'Unknown error occurred';
+      if (err.diags && Array.isArray(err.diags)) {
+        errorMsg += '\n\nDiagnostics:\n' + err.diags.map(d => `Line ${d.location?.start?.line || '?'}: ${d.message}`).join('\n');
+      }
       container.innerHTML = `
-        <div style="padding: 2rem; color: var(--color-error); font-family: monospace;">
-          Error rendering PlantUML diagram: ${err.message}
+        <div style="padding: 2rem; color: var(--color-error); font-family: monospace; white-space: pre-wrap;">
+          Error compiling DBML: ${errorMsg}
         </div>
       `;
     } finally {
@@ -298,28 +348,28 @@ export class ViewerController {
     }
   }
 
-  async renderMermaidPreview(container) {
-    try {
-      const escapedText = this.escapeHTML(this.host.activeFile.content || '');
-      container.innerHTML = `
-        <div class="mermaid-preview" style="padding: 1.5rem; height: 100%; overflow: auto;">
-          <pre><code class="language-mermaid">${escapedText}</code></pre>
-        </div>
-      `;
-      this.showLoaderOverlay(container);
-      await new Promise(r => setTimeout(r, 10));
+  async renderPlantumlPreview(container) {
+    container.innerHTML = '';
+    const viewer = document.createElement('diagram-viewer');
+    viewer.code = this.host.activeFile.content || '';
+    viewer.type = 'plantuml';
+    viewer.theme = this.host.theme;
+    viewer.style.width = '100%';
+    viewer.style.height = '100%';
+    viewer.style.display = 'block';
+    container.appendChild(viewer);
+  }
 
-      const isDark = this.host.theme === 'dark';
-      await renderDiagrams(container.querySelector('.mermaid-preview'), isDark);
-    } catch (err) {
-      container.innerHTML = `
-        <div style="padding: 2rem; color: var(--color-error); font-family: monospace;">
-          Error rendering Mermaid diagram: ${err.message}
-        </div>
-      `;
-    } finally {
-      this.hideLoaderOverlay(container);
-    }
+  async renderMermaidPreview(container) {
+    container.innerHTML = '';
+    const viewer = document.createElement('diagram-viewer');
+    viewer.code = this.host.activeFile.content || '';
+    viewer.type = 'mermaid';
+    viewer.theme = this.host.theme;
+    viewer.style.width = '100%';
+    viewer.style.height = '100%';
+    viewer.style.display = 'block';
+    container.appendChild(viewer);
   }
 
   renderSwaggerPreview(container) {
@@ -413,12 +463,22 @@ export class ViewerController {
     const isMarkdown = path.endsWith('.md') || path.endsWith('.markdown');
     const isPuml = path.endsWith('.puml') || path.endsWith('.plantuml') || path.endsWith('.pu');
     const isMermaid = path.endsWith('.mermaid') || path.endsWith('.mmd');
-
+    const isDbml = path.endsWith('.dbml');
+ 
     const container = document.getElementById('previewer-target');
-    const renderedHtml = container ? container.innerHTML : '';
+    let renderedHtml = '';
+    if (container) {
+      const viewer = container.querySelector('diagram-viewer');
+      if (viewer) {
+        const canvas = viewer.renderRoot?.querySelector('.diagram-viewer-canvas') || viewer.querySelector('.diagram-viewer-canvas');
+        renderedHtml = canvas ? canvas.innerHTML : container.innerHTML;
+      } else {
+        renderedHtml = container.innerHTML;
+      }
+    }
     const projectName = this.getProjectName();
-
-    if (isMarkdown) {
+ 
+    if (isMarkdown || isDbml) {
       exporterService.exportMarkdownHTML(projectName, this.host.activeFile, renderedHtml);
     } else if (isPuml || isMermaid) {
       exporterService.exportDiagramHTML(projectName, this.host.activeFile, renderedHtml);
@@ -483,14 +543,16 @@ export class ViewerController {
 
   handleExportSVG() {
     const container = document.getElementById('previewer-target');
-    const svg = container?.querySelector('svg');
+    const viewer = container?.querySelector('diagram-viewer');
+    const svg = viewer ? viewer.getSVGElement() : container?.querySelector('svg');
     const projectName = this.getProjectName();
     exporterService.exportDiagramSVG(projectName, this.host.activeFile, svg);
   }
 
   handleExportPNG() {
     const container = document.getElementById('previewer-target');
-    const svg = container?.querySelector('svg');
+    const viewer = container?.querySelector('diagram-viewer');
+    const svg = viewer ? viewer.getSVGElement() : container?.querySelector('svg');
     const projectName = this.getProjectName();
     exporterService.exportDiagramPNG(projectName, this.host.activeFile, svg);
   }

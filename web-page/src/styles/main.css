@@ -1,4 +1,6 @@
 @import './variables.css';
+@import './markdown.css';
+@import './dbdocs.css';
 
 /* Global Reset */
 * {
@@ -101,139 +103,7 @@ html[data-theme="dark"] .swagger-ui pre {
   filter: invert(1) hue-rotate(180deg);
 }
 
-/* ────────────────────────────────────────────────────────
-   MARKDOWN RENDER STYLING (FOR COLUMN 3)
-──────────────────────────────────────────────────────── */
-.markdown-preview {
-  padding: 2.5rem;
-  line-height: 1.7;
-  font-size: 1.05rem;
-  overflow-y: auto;
-  height: 100%;
-  background-color: var(--bg-secondary);
-}
 
-.markdown-preview h1, 
-.markdown-preview h2, 
-.markdown-preview h3, 
-.markdown-preview h4 {
-  font-family: var(--font-sans);
-  color: var(--text-primary);
-  margin-top: 1.8rem;
-  margin-bottom: 0.8rem;
-  font-weight: 700;
-}
-
-.markdown-preview h1 {
-  font-size: 2rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.5rem;
-}
-
-.markdown-preview h2 {
-  font-size: 1.5rem;
-}
-
-.markdown-preview p {
-  margin-bottom: 1.2rem;
-  color: var(--text-primary);
-}
-
-.markdown-preview ul, 
-.markdown-preview ol {
-  margin-left: 2rem;
-  margin-bottom: 1.2rem;
-}
-
-.markdown-preview li {
-  margin-bottom: 0.4rem;
-}
-
-.markdown-preview a {
-  color: var(--accent-color);
-  text-decoration: none;
-  font-weight: 500;
-  border-bottom: 1px dashed transparent;
-  transition: border-color var(--transition-normal);
-}
-
-.markdown-preview a:hover {
-  border-bottom-color: var(--accent-color);
-}
-
-.markdown-preview pre {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  padding: 1.2rem;
-  margin-bottom: 1.2rem;
-  overflow-x: auto;
-}
-
-.markdown-preview code {
-  font-family: var(--font-mono);
-  font-size: 0.9em;
-  background-color: var(--bg-tertiary);
-  padding: 0.2rem 0.4rem;
-  border-radius: var(--border-radius-sm);
-  color: var(--syntax-keyword);
-}
-
-.markdown-preview pre code {
-  background-color: transparent;
-  padding: 0;
-  color: var(--text-primary);
-}
-
-.markdown-preview blockquote {
-  border-left: 4px solid var(--accent-color);
-  padding: 0.8rem 1.2rem;
-  background-color: var(--bg-tertiary);
-  margin-bottom: 1.2rem;
-  font-style: italic;
-  border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
-}
-
-.markdown-preview table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1.5rem;
-}
-
-.markdown-preview th, 
-.markdown-preview td {
-  border: 1px solid var(--border-color);
-  padding: 0.8rem;
-  text-align: left;
-}
-
-.markdown-preview th {
-  background-color: var(--bg-tertiary);
-  font-weight: 600;
-}
-
-.markdown-preview tr:nth-child(even) {
-  background-color: var(--bg-primary);
-}
-
-/* Diagram Container Styling */
-.mermaid, 
-.plantuml-svg-container {
-  display: flex;
-  justify-content: center;
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
-  overflow-x: auto;
-}
-
-.plantuml-svg-container svg, 
-.mermaid svg {
-  max-width: 100%;
-  height: auto;
-}
 
 /* ────────────────────────────────────────────────────────
    HIGHLIGHT.JS DARK MODE THEME STYLE OVERRIDES (Scoped to Markdown)

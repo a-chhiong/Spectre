@@ -10,6 +10,7 @@ import { autocompletion } from "@codemirror/autocomplete";
 import {
   plantumlSupport,
   mermaidSupport,
+  dbmlSupport,
   codeLanguages,
   specStudioEditorTheme,
   specStudioHighlightStyle,
@@ -112,6 +113,7 @@ export class EditorController {
     const isMd = path.endsWith('.md') || path.endsWith('.markdown');
     const isPuml = path.endsWith('.puml') || path.endsWith('.plantuml') || path.endsWith('.pu');
     const isMermaid = path.endsWith('.mermaid') || path.endsWith('.mmd');
+    const isDbml = path.endsWith('.dbml');
 
     const extensions = [
       history(),
@@ -155,7 +157,8 @@ export class EditorController {
           codeLanguages 
         }) :
         (isPuml ? plantumlSupport :
-        (isMermaid ? mermaidSupport : [])))
+        (isMermaid ? mermaidSupport :
+        (isDbml ? dbmlSupport : []))))
       ),
 
       EditorView.updateListener.of((update) => {
@@ -167,17 +170,38 @@ export class EditorController {
 
       EditorView.domEventHandlers({
         click: (event, view) => {
+          // Links are only clickable when holding Ctrl (or Cmd on macOS)
+          if (!event.ctrlKey && !event.metaKey) return;
+          
           const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
           if (pos == null) return;
           const line = view.state.doc.lineAt(pos);
           
-          const match = line.text.match(/\$ref\s*:\s*['"]?([^'"]+)['"]?/);
-          if (match) {
-            const fullRef = match[1];
-            const [refPath] = fullRef.split('#');
-
+          let refPath = null;
+          
+          // 1. Check OpenAPI $ref
+          const refMatch = line.text.match(/\$ref\s*:\s*['"]?([^'"]+)['"]?/);
+          if (refMatch) {
+            refPath = refMatch[1];
+          } else {
+            // 2. Check Markdown @import
+            const importMatch = line.text.match(/@import\s+['"]?([^'"]+)['"]?/);
+            if (importMatch) {
+              refPath = importMatch[1];
+            } else {
+              // 3. Check DBML use * from
+              const dbmlMatch = line.text.match(/use\s+\*\s+from\s+['"]?([^'"]+)['"]?/);
+              if (dbmlMatch) {
+                refPath = dbmlMatch[1];
+              }
+            }
+          }
+ 
+          if (refPath) {
+            const [cleanRefPath] = refPath.split('#');
+ 
             this.host.dispatchEvent(new CustomEvent('open-ref-file', {
-              detail: { refPath },
+              detail: { refPath: cleanRefPath },
               bubbles: true,
               composed: true
             }));

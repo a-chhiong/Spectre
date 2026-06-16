@@ -233,6 +233,93 @@ const mermaidSupport = new LanguageSupport(mermaidLanguage);
 export { mermaidSupport };
 
 // ─────────────────────────────────────────────────────────
+//  4b. DBML LANGUAGE MODE
+// ─────────────────────────────────────────────────────────
+const dbmlKeywords = new Set([
+  "table", "tablegroup", "enum", "project", "ref", "indexes", "use", "from", "as", "note"
+]);
+
+const dbmlLanguage = StreamLanguage.define({
+  name: "dbml",
+  startState() {
+    return { inBlockComment: false };
+  },
+  token(stream, state) {
+    if (state.inBlockComment) {
+      if (stream.match(/.*?\*\//)) {
+        state.inBlockComment = false;
+      } else {
+        stream.skipToEnd();
+      }
+      return "comment";
+    }
+
+    if (stream.eatSpace()) return null;
+
+    // Block comment
+    if (stream.match(/^\/\*/)) {
+      state.inBlockComment = true;
+      if (stream.match(/.*?\*\//)) {
+        state.inBlockComment = false;
+      } else {
+        stream.skipToEnd();
+      }
+      return "comment";
+    }
+
+    // Line comment
+    if (stream.match(/^\/\/[^\n]*/)) {
+      return "comment";
+    }
+
+    // Strings
+    if (stream.match(/^"[^"]*"/) || stream.match(/^'[^']*'/) || stream.match(/^`[^`]*`/)) {
+      return "string";
+    }
+
+    // Settings brackets [...]
+    if (stream.match(/^\[/) || stream.match(/^\]/)) {
+      return "meta";
+    }
+
+    // Operators and connectors
+    if (stream.match(/^[:><.-]+/)) {
+      return "operator";
+    }
+
+    // Numbers
+    if (stream.match(/^\d+/)) {
+      return "number";
+    }
+
+    // Words (Keywords, Types, Variables)
+    const wordMatch = stream.match(/^[a-zA-Z_][a-zA-Z0-9_-]*/);
+    if (wordMatch) {
+      const word = wordMatch[0].toLowerCase();
+      if (dbmlKeywords.has(word)) {
+        return "keyword";
+      }
+      // Common types can be highlighted as typeName
+      const commonTypes = /^(varchar|char|text|int|integer|tinyint|smallint|bigint|float|double|decimal|numeric|boolean|bool|date|time|datetime|timestamp|json|uuid|blob|binary)/i;
+      if (commonTypes.test(word)) {
+        return "typeName";
+      }
+      return "variableName";
+    }
+
+    stream.next();
+    return null;
+  }
+});
+export { dbmlLanguage };
+
+// ─────────────────────────────────────────────────────────
+//  4c. DBML LANGUAGE SUPPORT
+// ─────────────────────────────────────────────────────────
+const dbmlSupport = new LanguageSupport(dbmlLanguage);
+export { dbmlSupport };
+
+// ─────────────────────────────────────────────────────────
 //  5. NESTED LANGUAGES FOR MARKDOWN CODE BLOCKS
 // ─────────────────────────────────────────────────────────
 /**
@@ -250,6 +337,11 @@ const codeLanguages = [
     name: "mermaid",
     alias: ["mmd", "mermaid"],
     load: async () => mermaidSupport
+  }),
+  LanguageDescription.of({
+    name: "dbml",
+    alias: ["dbml"],
+    load: async () => dbmlSupport
   }),
   ...languages
 ];
@@ -375,7 +467,7 @@ export { specStudioHighlightStyle };
  *   (e.g. { "$ref": "file.yaml" }) so it works in JSON specs too.
  */
 const refLinkDecorator = new MatchDecorator({
-  regexp: /\$ref\s*:\s*['"]?([^'"]+)['"]?/g,
+  regexp: /(?:\$ref\s*:\s*|@import\s+|use\s+\*\s+from\s+)['"]?([^'"\s]+)['"]?/g,
   decoration: (match) => {
     return Decoration.mark({
       class: "cm-ref-link",

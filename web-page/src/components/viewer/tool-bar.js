@@ -3,7 +3,7 @@ import { LitElement, html, css } from 'lit';
 export class ToolBar extends LitElement {
   static properties = {
     menuOpen: { type: Boolean },
-    contentType: { type: String }, // 'mermaid', 'plantuml', 'markdown', 'swagger'
+    contentType: { type: String }, // 'mermaid', 'plantuml', 'markdown', 'swagger', 'dbml'
     filename: { type: String }
   };
 
@@ -158,9 +158,14 @@ export class ToolBar extends LitElement {
     window.removeEventListener('click', this._clickOutsideHandler);
   }
 
+  willUpdate(changedProperties) {
+  }
+
   getExportOptions() {
     const isDiagram = this.contentType === 'mermaid' || this.contentType === 'plantuml';
-    if (isDiagram) {
+    const isChildDbml = this.contentType === 'dbml' && !(this.filename || '').toLowerCase().endsWith('index.dbml');
+    
+    if (isDiagram || isChildDbml) {
       return [
         { label: 'Export SVG', event: 'export-svg', icon: this.getSvgIcon() },
         { label: 'Export PNG', event: 'export-png', icon: this.getPngIcon() },

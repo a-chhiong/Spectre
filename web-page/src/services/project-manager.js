@@ -4,14 +4,7 @@ import { dbService } from './db.js';
 import JSZip from 'jszip';
 import { routerService } from '../infra/router.js';
 
-import { 
-  DEFAULT_YAML, 
-  USER_PATH_YAML, 
-  USER_SCHEMA_YAML, 
-  DEFAULT_MD,
-  DEFAULT_MERMAID,
-  DEFAULT_PLANTUML
- } from './project-default.js';
+import { getInitialProjectFiles } from '../../public/syntax_example.js';
 
 export class ProjectManager {
   constructor() {
@@ -136,15 +129,14 @@ export class ProjectManager {
    */
   async createNewProject(name, cleanStart = false) {
     const key = 'project-' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11));
-    const activeFile = cleanStart ? 'openapi.yaml' : 'openapi/openapi.yaml';
     const project = {
       key,
       name,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       locked: true, // default locked
-      activeFile,
-      openTabs: [activeFile]
+      activeFile: '',
+      openTabs: []
     };
 
     await dbService.saveProject(project);
@@ -162,14 +154,7 @@ paths: {}
         { projectKey: key, path: 'openapi.yaml', content: MINIMAL_YAML, type: 'file' }
       ];
     } else {
-      initialFiles = [
-        { projectKey: key, path: 'openapi/openapi.yaml', content: DEFAULT_YAML, type: 'file' },
-        { projectKey: key, path: 'openapi/paths/users.yaml', content: USER_PATH_YAML, type: 'file' },
-        { projectKey: key, path: 'openapi/components/schemas/user.yaml', content: USER_SCHEMA_YAML, type: 'file' },
-        { projectKey: key, path: 'template.mmd', content: DEFAULT_MERMAID, type: 'file' },
-        { projectKey: key, path: 'template.puml', content: DEFAULT_PLANTUML, type: 'file' },
-        { projectKey: key, path: 'API - Description.md', content: DEFAULT_MD, type: 'file' }
-      ];
+      initialFiles = getInitialProjectFiles(key);
     }
 
     await dbService.saveFilesBulk(initialFiles);
@@ -192,6 +177,14 @@ paths: {}
 
     // Load files
     const files = await dbService.getProjectFiles(key);
+
+    // Auto-migrate old default DBML file to resolve compilation errors
+    const rolePermsFile = files.find(f => f.path === 'dbml/schemas/role_permissions.dbml');
+    if (rolePermsFile && !rolePermsFile.content.includes("use * from './auth'")) {
+      rolePermsFile.content = "use * from './auth'\n\n" + rolePermsFile.content;
+      await dbService.saveFile(rolePermsFile);
+    }
+
     this.files$.next(files);
 
     // Sync locked state from project metadata
@@ -582,17 +575,13 @@ paths: {}
       throw new Error('ZIP file is empty.');
     }
 
-    // Save project key definition
-    const firstYaml = filesToSave.find(f => f.type === 'file' && (f.path.endsWith('.yaml') || f.path.endsWith('.json')));
-    const activeFile = firstYaml ? firstYaml.path : filesToSave[0].path;
-
     const project = {
       key: projectKey,
       name: projName,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      activeFile,
-      openTabs: [activeFile]
+      activeFile: '',
+      openTabs: []
     };
 
     await dbService.saveProject(project);
@@ -677,27 +666,13 @@ paths: {}
       throw new Error('No files found in folder.');
     }
 
-    // Save new project
-    const entrypoints = ['openapi/openapi.yaml', 'openapi.yaml', 'swagger.yaml', 'openapi.json'];
-    let activeFile = '';
-    for (const ep of entrypoints) {
-      if (filesToSave.some(f => f.path === ep && f.type === 'file')) {
-        activeFile = ep;
-        break;
-      }
-    }
-    if (!activeFile) {
-      const firstYaml = filesToSave.find(f => f.type === 'file' && (f.path.endsWith('.yaml') || f.path.endsWith('.json')));
-      activeFile = firstYaml ? firstYaml.path : filesToSave[0].path;
-    }
-
     const project = {
       key: projectKey,
       name: projName,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      activeFile,
-      openTabs: [activeFile]
+      activeFile: '',
+      openTabs: []
     };
 
     await dbService.saveProject(project);
