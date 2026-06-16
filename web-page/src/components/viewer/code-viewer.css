@@ -1,0 +1,102 @@
+/* code-viewer.css - Co-located companion for code-viewer.js */
+
+.code-viewer-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#previewer-target {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+/* Child viewer components fill the previewer target */
+#previewer-target > markdown-viewer,
+#previewer-target > dbml-viewer,
+#previewer-target > diagram-viewer,
+#previewer-target > swagger-viewer {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media print {
+  .code-viewer-container {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+  #previewer-target {
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+}
+
+/* Unified Auto-hidden Scrollbar */
+#previewer-target::-webkit-scrollbar,
+#previewer-target *::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+#previewer-target::-webkit-scrollbar-track,
+#previewer-target *::-webkit-scrollbar-track {
+  background: transparent;
+}
+#previewer-target::-webkit-scrollbar-thumb,
+#previewer-target *::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 6px;
+}
+#previewer-target::-webkit-scrollbar-button:single-button,
+#previewer-target *::-webkit-scrollbar-button:single-button {
+  background-color: transparent;
+  display: block;
+  height: 12px;
+  width: 12px;
+}
+
+.code-viewer-container:hover #previewer-target::-webkit-scrollbar-thumb,
+.code-viewer-container:hover #previewer-target *::-webkit-scrollbar-thumb {
+  background-color: rgba(120, 120, 120, 0.4);
+}
+.code-viewer-container:hover #previewer-target::-webkit-scrollbar-thumb:hover,
+.code-viewer-container:hover #previewer-target *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(120, 120, 120, 0.8);
+}
+
+.code-viewer-container:hover #previewer-target::-webkit-scrollbar-button:single-button:vertical:decrement,
+.code-viewer-container:hover #previewer-target *::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23888'><polygon points='50,25 15,75 85,75'/></svg>");
+  background-size: 8px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.code-viewer-container:hover #previewer-target::-webkit-scrollbar-button:single-button:vertical:increment,
+.code-viewer-container:hover #previewer-target *::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23888'><polygon points='15,25 85,25 50,75'/></svg>");
+  background-size: 8px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.code-viewer-container:hover #previewer-target::-webkit-scrollbar-button:single-button:horizontal:decrement,
+.code-viewer-container:hover #previewer-target *::-webkit-scrollbar-button:single-button:horizontal:decrement {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23888'><polygon points='75,15 75,85 25,50'/></svg>");
+  background-size: 8px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.code-viewer-container:hover #previewer-target::-webkit-scrollbar-button:single-button:horizontal:increment,
+.code-viewer-container:hover #previewer-target *::-webkit-scrollbar-button:single-button:horizontal:increment {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23888'><polygon points='25,15 25,85 75,75'/></svg>");
+  background-size: 8px;
+  background-position: center;
+  background-repeat: no-repeat;
+}

@@ -1,0 +1,39 @@
+/* markdown-viewer.css - Co-located companion for markdown-viewer.js */
+
+.markdown-viewer-host {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+.markdown-viewer-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 2rem;
+  text-align: center;
+}
+
+.markdown-viewer-placeholder svg {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+  color: var(--text-secondary);
+}
+
+.markdown-viewer-error {
+  padding: 2rem;
+  color: var(--color-error);
+  font-family: var(--font-mono);
+}
+
+/* Workspace links styled distinctly */
+.markdown-preview a.workspace-link {
+  color: var(--accent-color);
+  text-decoration: underline;
+  cursor: pointer;
+}

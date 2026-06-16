@@ -1,4 +1,5 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
+import './diagram-viewer.css';
 
 export class DiagramViewer extends LitElement {
   static properties = {
@@ -14,156 +15,6 @@ export class DiagramViewer extends LitElement {
 
   createRenderRoot() {
     return this; // Render in Light DOM so styles, fonts, and Mermaid libraries work flawlessly
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this._injectStyles();
-  }
-
-  _injectStyles() {
-    const styleId = 'diagram-viewer-styles';
-    let styleEl = document.getElementById(styleId);
-    if (!styleEl) {
-      styleEl = document.createElement('style');
-      styleEl.id = styleId;
-      document.head.appendChild(styleEl);
-    }
-    styleEl.textContent = `
-      diagram-viewer {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
-
-      .diagram-viewer-container {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background-color: #ffffff; /* Explicitly white background */
-        display: flex;
-        flex-direction: column;
-      }
-
-      .diagram-viewer-viewport {
-        position: relative;
-        flex: 1;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        cursor: grab;
-        user-select: none;
-        touch-action: none;
-      }
-
-      .diagram-viewer-viewport:active {
-        cursor: grabbing;
-      }
-
-      .diagram-viewer-canvas {
-        position: absolute;
-        transform-origin: 0 0;
-        will-change: transform;
-      }
-
-      diagram-viewer .mermaid,
-      diagram-viewer .plantuml-svg-container {
-        margin: 0 !important;
-        padding: 0 !important;
-        background: transparent !important;
-        border: none !important;
-      }
-
-      /* Float Zoom Controls */
-      .diagram-viewer-controls {
-        position: absolute;
-        bottom: 16px;
-        right: 16px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        background: var(--glass-bg, rgba(255, 255, 255, 0.85));
-        border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.4));
-        border-radius: var(--border-radius-lg, 12px);
-        box-shadow: var(--glass-shadow, 0 8px 32px 0 rgba(0, 0, 0, 0.1));
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        z-index: 10;
-        color: var(--text-primary);
-        font-family: var(--font-sans);
-        font-size: 0.85rem;
-        user-select: none;
-      }
-
-      .diagram-viewer-controls button {
-        background: transparent;
-        border: none;
-        color: var(--text-primary);
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--border-radius-sm, 4px);
-        cursor: pointer;
-        transition: background var(--transition-normal);
-      }
-
-      .diagram-viewer-controls button:hover {
-        background: var(--bg-tertiary, rgba(0,0,0,0.05));
-      }
-
-      .diagram-viewer-controls button:active {
-        background: var(--border-color);
-      }
-
-      .diagram-viewer-controls .divider {
-        width: 1px;
-        height: 16px;
-        background: var(--border-color);
-        margin: 0 4px;
-      }
-
-      .diagram-viewer-controls .zoom-level {
-        min-width: 44px;
-        text-align: center;
-        font-weight: 600;
-      }
-
-      /* Loading / Error States */
-      .diagram-viewer-loading-overlay {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: #ffffff;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 5;
-        color: var(--accent-color);
-        font-family: var(--font-sans);
-      }
-
-      .diagram-viewer-error {
-        padding: 2rem;
-        color: var(--color-error);
-        font-family: var(--font-mono);
-        overflow: auto;
-        max-height: 100%;
-        background-color: #ffffff;
-      }
-
-      /* Animation */
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-      .diagram-viewer-spinner {
-        animation: spin 1s linear infinite;
-      }
-    `;
-    document.head.appendChild(styleEl);
   }
 
   constructor() {
@@ -486,14 +337,14 @@ export class DiagramViewer extends LitElement {
               <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
               <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor"></path>
             </svg>
-            <div style="margin-top: 12px; font-weight: 500;">Rendering Diagram...</div>
+            <div class="diagram-viewer-loading-text">Rendering Diagram...</div>
           </div>
         ` : ''}
 
         ${this.errorMessage ? html`
           <div class="diagram-viewer-error">
-            <h3 style="margin-bottom: 8px;">Error Rendering Diagram</h3>
-            <pre style="white-space: pre-wrap;">${this.errorMessage}</pre>
+            <h3 class="diagram-viewer-error-title">Error Rendering Diagram</h3>
+            <pre class="diagram-viewer-error-pre">${this.errorMessage}</pre>
           </div>
         ` : ''}
 
@@ -513,7 +364,7 @@ export class DiagramViewer extends LitElement {
             </button>
             <span class="divider"></span>
             <button @click=${this.resetZoom} title="Actual Size (1:1)">
-              <span style="font-size: 10px; font-weight: bold;">1:1</span>
+              <span class="diagram-viewer-actual-size-label">1:1</span>
             </button>
             <button @click=${this.fitToScreen} title="Fit to Screen">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

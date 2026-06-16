@@ -12,7 +12,7 @@ export class ToolBar extends LitElement {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 0 12px;
+      padding: 0 12px !important;
       background: var(--bg-secondary);
       border-bottom: 1px solid var(--border-color);
       height: var(--tabbar-height);
@@ -79,6 +79,7 @@ export class ToolBar extends LitElement {
     .os-toolbar-btn svg {
       width: 14px;
       height: 14px;
+      padding: 0px 5px;
     }
 
     .os-export-menu {

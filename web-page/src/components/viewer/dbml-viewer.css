@@ -199,3 +199,16 @@
   z-index: 10;
   color: var(--accent-color);
 }
+
+.render-loader-overlay .spinner {
+  animation: dbml-spin 1s linear infinite;
+}
+
+@keyframes dbml-spin {
+  to { transform: rotate(360deg); }
+}
+
+.render-loader-text {
+  margin-top: 1rem;
+  font-weight: 500;
+}

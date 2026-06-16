@@ -1,0 +1,80 @@
+/* swagger-viewer.css - Co-located companion for swagger-viewer.js */
+
+.swagger-viewer-host {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+.swagger-viewer-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  padding: 2rem;
+  text-align: center;
+  font-family: var(--font-sans);
+}
+
+.swagger-viewer-placeholder svg {
+  margin-bottom: 1.5rem;
+  opacity: 0.7;
+  color: var(--text-secondary);
+}
+
+.swagger-viewer-placeholder h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.swagger-viewer-placeholder p {
+  margin: 0 0 1.5rem 0;
+  max-width: 400px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.swagger-viewer-placeholder code {
+  font-family: var(--font-mono);
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85em;
+}
+
+.swagger-viewer-placeholder .btn-primary {
+  padding: 8px 16px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--transition-normal);
+  background: var(--accent-color);
+  color: #fff;
+  font-weight: 500;
+}
+
+.swagger-viewer-placeholder .btn-primary:hover {
+  opacity: 0.85;
+}
+
+#swagger-ui {
+  width: 100%;
+  height: 100%;
+}
+
+/* Dark theme filter override for Swagger UI */
+html[data-theme="dark"] #swagger-ui {
+  filter: invert(0.92) hue-rotate(180deg);
+}
+
+html[data-theme="dark"] #swagger-ui img,
+html[data-theme="dark"] #swagger-ui svg {
+  filter: invert(0.92) hue-rotate(180deg);
+}
