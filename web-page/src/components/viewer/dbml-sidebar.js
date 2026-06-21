@@ -196,7 +196,7 @@ export class DbmlSidebar extends LitElement {
           };
           
           (tg.tables || []).forEach(groupTable => {
-            const tSchema = groupTable.schemaName || schemaName;
+            const tSchema = (groupTable.schema && groupTable.schema.name) || groupTable.schemaName || schemaName;
             const tName = groupTable.tableName || groupTable.name;
             // Track globally by schema+name
             groupedTableNames.add(`${tSchema}-${tName}`);

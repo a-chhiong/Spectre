@@ -411,3 +411,88 @@
   overflow: hidden;
 }
 
+/* ========== Doc-mode Mermaid Zoom affordance ========== */
+/* Applied programmatically by enableMermaidInteractiveZoom() */
+.mermaid[data-zoom-enabled] {
+  cursor: grab;
+  overflow: hidden;
+  position: relative;
+  border-radius: var(--border-radius-md);
+  transition: box-shadow 0.2s;
+}
+
+.mermaid[data-zoom-enabled]:hover {
+  box-shadow: 0 0 0 2px var(--border-color);
+}
+
+.mermaid[data-zoom-enabled]:active {
+  cursor: grabbing;
+}
+
+/* Prevent SVG from overflowing its container when transformed */
+.mermaid[data-zoom-enabled] svg {
+  display: block;
+}
+
+/* Zoom hint badge — shown on hover (bottom-left, away from reset button) */
+.mermaid[data-zoom-enabled]::after {
+  content: 'Ctrl+Scroll to zoom · Drag to pan';
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  font-size: 0.65rem;
+  color: var(--text-muted, var(--text-secondary));
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 2px 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.mermaid[data-zoom-enabled]:hover::after {
+  opacity: 1;
+}
+
+/* Reset button — injected by enableMermaidInteractiveZoom() */
+.mermaid-zoom-reset-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 0.68rem;
+  font-family: inherit;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, background 0.15s, color 0.15s;
+  z-index: 10;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.mermaid[data-zoom-enabled]:hover .mermaid-zoom-reset-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mermaid-zoom-reset-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--accent-color);
+}
+
+.mermaid-zoom-reset-btn svg {
+  flex-shrink: 0;
+  color: inherit;
+}
+

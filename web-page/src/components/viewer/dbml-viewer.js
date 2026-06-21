@@ -36,6 +36,7 @@ export class DbmlViewer extends LitElement {
     this._rawContent = null;
     this.activeEntityPath = null;
     this.groupingMode = 'schema';
+    this._scrollToElementId = null;
   }
 
   updated(changedProperties) {
@@ -67,7 +68,9 @@ export class DbmlViewer extends LitElement {
 
   handleGroupingModeChange(e) {
     this.groupingMode = e.detail.mode;
-    this.activeEntityPath = null;
+    if (this.activeEntityPath && !this.activeEntityPath.startsWith('table-') && !this.activeEntityPath.startsWith('enum-')) {
+      this.activeEntityPath = null;
+    }
     this._emitBreadcrumb();
     this.renderContent();
   }
@@ -161,7 +164,24 @@ export class DbmlViewer extends LitElement {
       await new Promise(r => setTimeout(r, 10));
 
       const isDark = this.theme === 'dark';
-      await renderDiagrams(mainContainer.querySelector('.markdown-preview'), isDark);
+      await renderDiagrams(mainContainer.querySelector('.markdown-preview'), isDark, { enableZoom: true });
+
+      // Handle scrolling: scroll to target table if navigating from a reference, otherwise scroll to top (original)
+      let scrolled = false;
+      if (this._scrollToElementId) {
+        const targetEl = mainContainer.querySelector(`#${this._scrollToElementId}`);
+        if (targetEl) {
+          const containerRect = mainContainer.getBoundingClientRect();
+          const targetRect = targetEl.getBoundingClientRect();
+          const offset = targetRect.top - containerRect.top + mainContainer.scrollTop;
+          mainContainer.scrollTo({ top: offset, behavior: 'auto' });
+          scrolled = true;
+        }
+        this._scrollToElementId = null; // Clear the flag
+      }
+      if (!scrolled) {
+        mainContainer.scrollTop = 0;
+      }
 
     } catch (err) {
       console.error(err);
@@ -248,6 +268,7 @@ export class DbmlViewer extends LitElement {
     if (link && link.getAttribute('href') && link.getAttribute('href').startsWith('#table-')) {
       e.preventDefault();
       const targetPath = link.getAttribute('href').substring(1); // removes '#'
+      this._scrollToElementId = targetPath;
       this.activeEntityPath = targetPath;
       this.requestUpdate();
       
