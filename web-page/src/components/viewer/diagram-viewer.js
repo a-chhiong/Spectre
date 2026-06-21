@@ -1,4 +1,5 @@
 import { LitElement, html } from 'lit';
+import { zoom } from 'd3-zoom';
 import './diagram-viewer.css';
 
 export class DiagramViewer extends LitElement {
@@ -34,6 +35,10 @@ export class DiagramViewer extends LitElement {
     this.startY = 0;
     this.panX = 0;
     this.panY = 0;
+    
+    // d3-zoom behavior
+    this.zoomBehavior = null;
+    this._zoomKnobScale = 1.0; // Separate knob scale for mouse wheel
   }
 
   updated(changedProperties) {

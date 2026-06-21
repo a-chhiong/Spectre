@@ -1,0 +1,1757 @@
+{
+  "core.users": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "orders.user_id\ncart.cart_items.user_id\nreview.reviews.user_id\n+1 more",
+        "note": "Id of the user",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "orders.user_id\ncart.cart_items.user_id\nreview.reviews.user_id\n+1 more",
+          "Id of the user",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "full_name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Fullname of the user",
+        "raw": [
+          "full_name",
+          "varchar",
+          "",
+          "",
+          "Fullname of the user",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "email",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Email address of the user",
+        "raw": [
+          "email",
+          "varchar",
+          "",
+          "",
+          "Email address of the user",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "username",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Username chosen by the user",
+        "raw": [
+          "username",
+          "varchar",
+          "",
+          "",
+          "Username chosen by the user",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "password",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Hashed password of the user",
+        "raw": [
+          "password",
+          "varchar",
+          "",
+          "",
+          "Hashed password of the user",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "phone_number",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Phone number of the user",
+        "raw": [
+          "phone_number",
+          "varchar",
+          "",
+          "",
+          "Phone number of the user",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "last_login",
+        "type": "timestamp",
+        "settings": "",
+        "refs": "",
+        "note": "Timestamp of the user's last login",
+        "raw": [
+          "last_login",
+          "timestamp",
+          "",
+          "",
+          "Timestamp of the user's last login",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "avatar_url",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "URL of the user's profile picture",
+        "raw": [
+          "avatar_url",
+          "varchar",
+          "",
+          "",
+          "URL of the user's profile picture",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp",
+        "settings": "",
+        "refs": "",
+        "note": "When user created",
+        "raw": [
+          "created_at",
+          "timestamp",
+          "",
+          "",
+          "When user created",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "country_code",
+        "type": "int",
+        "settings": "",
+        "refs": "info.countries.code",
+        "note": "Country of the user",
+        "raw": [
+          "country_code",
+          "int",
+          "",
+          "info.countries.code",
+          "Country of the user",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "The users table stores information about each user registered on the platform. It includes personal details, authentication credentials, and metadata about account creation and activity.",
+      "Recent activities",
+      "Id of the user",
+      "Fullname of the user",
+      "Email address of the user",
+      "Username chosen by the user",
+      "Hashed password of the user",
+      "Phone number of the user",
+      "Timestamp of the user's last login",
+      "URL of the user's profile picture",
+      "When user created",
+      "Country of the user"
+    ]
+  },
+  "core.order_items": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "order_item_variants.order_item_id",
+        "note": "Id of the order item",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "order_item_variants.order_item_id",
+          "Id of the order item",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "order_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "orders.id",
+        "note": "Id of the order",
+        "raw": [
+          "order_id",
+          "int",
+          "not_null",
+          "orders.id",
+          "Id of the order",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "product_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "product.products.id",
+        "note": "Id of the product in the order item",
+        "raw": [
+          "product_id",
+          "int",
+          "not_null",
+          "product.products.id",
+          "Id of the product in the order item",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "product_name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Name of the product in the order item",
+        "raw": [
+          "product_name",
+          "varchar",
+          "",
+          "",
+          "Name of the product in the order item",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "quantity",
+        "type": "int",
+        "settings": "check: quantity > 0",
+        "refs": "",
+        "note": "Default: 1\n\nQuantity of the item",
+        "raw": [
+          "quantity",
+          "int",
+          "check: quantity > 0",
+          "",
+          "Default: 1\n\nQuantity of the item",
+          "7 months ago"
+        ]
+      },
+      {
+        "name": "status",
+        "type": "orders_status\nE",
+        "settings": "",
+        "refs": "",
+        "note": "",
+        "raw": [
+          "status",
+          "orders_status\nE",
+          "",
+          "",
+          "",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "price",
+        "type": "decimal",
+        "settings": "check: price >= 0",
+        "refs": "",
+        "note": "Price of the order item",
+        "raw": [
+          "price",
+          "decimal",
+          "check: price >= 0",
+          "",
+          "Price of the order item",
+          "7 months ago"
+        ]
+      },
+      {
+        "name": "image_url",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "URL of the product image in the order item",
+        "raw": [
+          "image_url",
+          "varchar",
+          "",
+          "",
+          "URL of the product image in the order item",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the order item",
+      "Id of the order",
+      "Id of the product in the order item",
+      "Name of the product in the order item",
+      "Quantity of the item",
+      "Price of the order item",
+      "URL of the product image in the order item"
+    ]
+  },
+  "core.orders": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK",
+        "refs": "order_items.order_id\npayment_transactions.order_id",
+        "note": "Id of the order",
+        "raw": [
+          "id",
+          "int",
+          "PK",
+          "order_items.order_id\npayment_transactions.order_id",
+          "Id of the order",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "user_id",
+        "type": "int",
+        "settings": "not_null\nunique",
+        "refs": "users.id",
+        "note": "",
+        "raw": [
+          "user_id",
+          "int",
+          "not_null\nunique",
+          "users.id",
+          "",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "status",
+        "type": "orders_status\nE",
+        "settings": "",
+        "refs": "",
+        "note": "Status of the order:\n\npending\nprocessing\nshipped\ncanceled",
+        "raw": [
+          "status",
+          "orders_status\nE",
+          "",
+          "",
+          "Status of the order:\n\npending\nprocessing\nshipped\ncanceled",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "created_at",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "When order created",
+        "raw": [
+          "created_at",
+          "varchar",
+          "",
+          "",
+          "When order created",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "total_price",
+        "type": "decimal",
+        "settings": "check: total_price >= 0",
+        "refs": "",
+        "note": "Total price of the order",
+        "raw": [
+          "total_price",
+          "decimal",
+          "check: total_price >= 0",
+          "",
+          "Total price of the order",
+          "7 months ago"
+        ]
+      },
+      {
+        "name": "shipping_address",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Shipping address of the order",
+        "raw": [
+          "shipping_address",
+          "varchar",
+          "",
+          "",
+          "Shipping address of the order",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "billing_address",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Billing address of the order",
+        "raw": [
+          "billing_address",
+          "varchar",
+          "",
+          "",
+          "Billing address of the order",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "payment_method",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Payment method used for the order",
+        "raw": [
+          "payment_method",
+          "varchar",
+          "",
+          "",
+          "Payment method used for the order",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "payment_status",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Payment status of the order",
+        "raw": [
+          "payment_status",
+          "varchar",
+          "",
+          "",
+          "Payment status of the order",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "shipping_carrier_id",
+        "type": "int",
+        "settings": "",
+        "refs": "shipping_carriers.id",
+        "note": "Id of the shipping carrier",
+        "raw": [
+          "shipping_carrier_id",
+          "int",
+          "",
+          "shipping_carriers.id",
+          "Id of the shipping carrier",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the order",
+      "Status of the order:",
+      "When order created",
+      "Total price of the order",
+      "Shipping address of the order",
+      "Billing address of the order",
+      "Payment method used for the order",
+      "Payment status of the order",
+      "Id of the shipping carrier"
+    ]
+  },
+  "core.order_item_variants": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "",
+        "note": "Id of the order item variant",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "",
+          "Id of the order item variant",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "order_item_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "order_items.id",
+        "note": "Id of the order item",
+        "raw": [
+          "order_item_id",
+          "int",
+          "not_null",
+          "order_items.id",
+          "Id of the order item",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "product_variant_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "product.product_variants.id",
+        "note": "Id of the product variant",
+        "raw": [
+          "product_variant_id",
+          "int",
+          "not_null",
+          "product.product_variants.id",
+          "Id of the product variant",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the order item variant",
+      "Id of the order item",
+      "Id of the product variant"
+    ]
+  },
+  "core.merchants": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "",
+        "refs": "product.products.merchant_id",
+        "note": "Id of the merchant",
+        "raw": [
+          "id",
+          "int",
+          "",
+          "product.products.merchant_id",
+          "Id of the merchant",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "country_code",
+        "type": "int",
+        "settings": "",
+        "refs": "info.countries.code",
+        "note": "Country of the merchant",
+        "raw": [
+          "country_code",
+          "int",
+          "",
+          "info.countries.code",
+          "Country of the merchant",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "status",
+        "type": "orders_status\nE",
+        "settings": "",
+        "refs": "",
+        "note": "",
+        "raw": [
+          "status",
+          "orders_status\nE",
+          "",
+          "",
+          "",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "merchant_name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "",
+        "raw": [
+          "merchant_name",
+          "varchar",
+          "",
+          "",
+          "",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "address",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Address of the merchant",
+        "raw": [
+          "address",
+          "varchar",
+          "",
+          "",
+          "Address of the merchant",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "website_url",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "URL of the merchant's website",
+        "raw": [
+          "website_url",
+          "varchar",
+          "",
+          "",
+          "URL of the merchant's website",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "phone_number",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Phone number of the merchant",
+        "raw": [
+          "phone_number",
+          "varchar",
+          "",
+          "",
+          "Phone number of the merchant",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "email",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Email address of the merchant",
+        "raw": [
+          "email",
+          "varchar",
+          "",
+          "",
+          "Email address of the merchant",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "logo_url",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "URL of the merchant'slogo",
+        "raw": [
+          "logo_url",
+          "varchar",
+          "",
+          "",
+          "URL of the merchant'slogo",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "settings": "",
+        "refs": "",
+        "note": "Default: now()\n\nWhen merchant created",
+        "raw": [
+          "created_at",
+          "datetime",
+          "",
+          "",
+          "Default: now()\n\nWhen merchant created",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the merchant",
+      "Country of the merchant",
+      "Address of the merchant",
+      "URL of the merchant's website",
+      "Phone number of the merchant",
+      "Email address of the merchant",
+      "URL of the merchant'slogo",
+      "When merchant created"
+    ]
+  },
+  "core.shipping_carriers": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "orders.shipping_carrier_id",
+        "note": "Id of the shipping carrier",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "orders.shipping_carrier_id",
+          "Id of the shipping carrier",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Name of the shipping carrier",
+        "raw": [
+          "name",
+          "varchar",
+          "",
+          "",
+          "Name of the shipping carrier",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "tracking_url",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "URL for tracking the shipment",
+        "raw": [
+          "tracking_url",
+          "varchar",
+          "",
+          "",
+          "URL for tracking the shipment",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the shipping carrier",
+      "Name of the shipping carrier",
+      "URL for tracking the shipment"
+    ]
+  },
+  "core.payment_transactions": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "",
+        "note": "Id of the payment transaction",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "",
+          "Id of the payment transaction",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "order_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "orders.id",
+        "note": "Id of the order",
+        "raw": [
+          "order_id",
+          "int",
+          "not_null",
+          "orders.id",
+          "Id of the order",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "amount",
+        "type": "int",
+        "settings": "check: amount >= 0",
+        "refs": "",
+        "note": "Amount of the payment transaction",
+        "raw": [
+          "amount",
+          "int",
+          "check: amount >= 0",
+          "",
+          "Amount of the payment transaction",
+          "7 months ago"
+        ]
+      },
+      {
+        "name": "status",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Status of the payment transaction",
+        "raw": [
+          "status",
+          "varchar",
+          "",
+          "",
+          "Status of the payment transaction",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "settings": "",
+        "refs": "",
+        "note": "Default: now()\n\nWhen payment transaction created",
+        "raw": [
+          "created_at",
+          "datetime",
+          "",
+          "",
+          "Default: now()\n\nWhen payment transaction created",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "payment_method",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Payment method used for the transaction",
+        "raw": [
+          "payment_method",
+          "varchar",
+          "",
+          "",
+          "Payment method used for the transaction",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "transaction_id",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Transaction id of the payment",
+        "raw": [
+          "transaction_id",
+          "varchar",
+          "",
+          "",
+          "Transaction id of the payment",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the payment transaction",
+      "Id of the order",
+      "Amount of the payment transaction",
+      "Status of the payment transaction",
+      "When payment transaction created",
+      "Payment method used for the transaction",
+      "Transaction id of the payment"
+    ]
+  },
+  "core.promotions": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "",
+        "note": "Id of the promotion",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "",
+          "Id of the promotion",
+          "a year ago"
+        ]
+      },
+      {
+        "name": "name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Name of the promotion",
+        "raw": [
+          "name",
+          "varchar",
+          "",
+          "",
+          "Name of the promotion",
+          "a year ago"
+        ]
+      },
+      {
+        "name": "description",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Description of the promotion",
+        "raw": [
+          "description",
+          "varchar",
+          "",
+          "",
+          "Description of the promotion",
+          "a year ago"
+        ]
+      },
+      {
+        "name": "discount_percentage",
+        "type": "decimal",
+        "settings": "check: discount_percentage >= 0 AND discount_percentage <= 100",
+        "refs": "",
+        "note": "Discount percentage of the promotion",
+        "raw": [
+          "discount_percentage",
+          "decimal",
+          "check: discount_percentage >= 0 AND discount_percentage <= 100",
+          "",
+          "Discount percentage of the promotion",
+          "7 months ago"
+        ]
+      },
+      {
+        "name": "start_date",
+        "type": "datetime",
+        "settings": "not_null",
+        "refs": "",
+        "note": "Start date of the promotion",
+        "raw": [
+          "start_date",
+          "datetime",
+          "not_null",
+          "",
+          "Start date of the promotion",
+          "a year ago"
+        ]
+      },
+      {
+        "name": "end_date",
+        "type": "datetime",
+        "settings": "not_null",
+        "refs": "",
+        "note": "End date of the promotion",
+        "raw": [
+          "end_date",
+          "datetime",
+          "not_null",
+          "",
+          "End date of the promotion",
+          "a year ago"
+        ]
+      },
+      {
+        "name": "product_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "product.products.id",
+        "note": "Id of the product associated with the promotion, if any",
+        "raw": [
+          "product_id",
+          "int",
+          "not_null",
+          "product.products.id",
+          "Id of the product associated with the promotion, if any",
+          "a year ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the promotion",
+      "Name of the promotion",
+      "Description of the promotion",
+      "Discount percentage of the promotion",
+      "Start date of the promotion",
+      "End date of the promotion",
+      "Id of the product associated with the promotion, if any"
+    ]
+  },
+  "info.countries": {
+    "columns": [
+      {
+        "name": "code",
+        "type": "int",
+        "settings": "PK",
+        "refs": "core.users.country_code\ncore.merchants.country_code",
+        "note": "Referred from here",
+        "raw": [
+          "code",
+          "int",
+          "PK",
+          "core.users.country_code\ncore.merchants.country_code",
+          "Referred from here",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Name of the country",
+        "raw": [
+          "name",
+          "varchar",
+          "",
+          "",
+          "Name of the country",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "continent_name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Continent name of the country",
+        "raw": [
+          "continent_name",
+          "varchar",
+          "",
+          "",
+          "Continent name of the country",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Referred from here",
+      "Name of the country",
+      "Continent name of the country"
+    ]
+  },
+  "product.products": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK",
+        "refs": "product_variants.product_id\ncore.order_items.product_id\nproduct_tags_map.product_id\n+4 more",
+        "note": "The product id",
+        "raw": [
+          "id",
+          "int",
+          "PK",
+          "product_variants.product_id\ncore.order_items.product_id\nproduct_tags_map.product_id\n+4 more",
+          "The product id",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "The product name",
+        "raw": [
+          "name",
+          "varchar",
+          "",
+          "",
+          "The product name",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "description",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Description of the product",
+        "raw": [
+          "description",
+          "varchar",
+          "",
+          "",
+          "Description of the product",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "brand",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Brand of the product",
+        "raw": [
+          "brand",
+          "varchar",
+          "",
+          "",
+          "Brand of the product",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "color",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Color of the product",
+        "raw": [
+          "color",
+          "varchar",
+          "",
+          "",
+          "Color of the product",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "weight",
+        "type": "float",
+        "settings": "check: weight >= 0",
+        "refs": "",
+        "note": "Weight of the product",
+        "raw": [
+          "weight",
+          "float",
+          "check: weight >= 0",
+          "",
+          "Weight of the product",
+          "7 months ago"
+        ]
+      },
+      {
+        "name": "dimensions",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Dimensions of the product",
+        "raw": [
+          "dimensions",
+          "varchar",
+          "",
+          "",
+          "Dimensions of the product",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "rating",
+        "type": "float",
+        "settings": "check: rating >= 0 AND rating <= 5",
+        "refs": "",
+        "note": "Rating of the product",
+        "raw": [
+          "rating",
+          "float",
+          "check: rating >= 0 AND rating <= 5",
+          "",
+          "Rating of the product",
+          "7 months ago"
+        ]
+      },
+      {
+        "name": "merchant_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "core.merchants.id",
+        "note": "The merchant id of the product",
+        "raw": [
+          "merchant_id",
+          "int",
+          "not_null",
+          "core.merchants.id",
+          "The merchant id of the product",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "price",
+        "type": "decimal",
+        "settings": "check: price >= 0",
+        "refs": "",
+        "note": "Price of the product",
+        "raw": [
+          "price",
+          "decimal",
+          "check: price >= 0",
+          "",
+          "Price of the product",
+          "7 months ago"
+        ]
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "settings": "",
+        "refs": "",
+        "note": "Default: now()\n\nWhen product created",
+        "raw": [
+          "created_at",
+          "datetime",
+          "",
+          "",
+          "Default: now()\n\nWhen product created",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "category_id",
+        "type": "int",
+        "settings": "",
+        "refs": "categories.id",
+        "note": "Id of the category the product belongs to",
+        "raw": [
+          "category_id",
+          "int",
+          "",
+          "categories.id",
+          "Id of the category the product belongs to",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "expiry_date",
+        "type": "datetime",
+        "settings": "",
+        "refs": "",
+        "note": "Expiration date of the product from the maker",
+        "raw": [
+          "expiry_date",
+          "datetime",
+          "",
+          "",
+          "Expiration date of the product from the maker",
+          "a year ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "The product id",
+      "The product name",
+      "Description of the product",
+      "Brand of the product",
+      "Color of the product",
+      "Weight of the product",
+      "Dimensions of the product",
+      "Rating of the product",
+      "The merchant id of the product",
+      "Price of the product",
+      "When product created",
+      "Id of the category the product belongs to",
+      "Expiration date of the product from the maker"
+    ]
+  },
+  "product.categories": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "products.category_id",
+        "note": "Id of the category",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "products.category_id",
+          "Id of the category",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Name of the category",
+        "raw": [
+          "name",
+          "varchar",
+          "",
+          "",
+          "Name of the category",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "parent_category_id",
+        "type": "int",
+        "settings": "",
+        "refs": "",
+        "note": "Id of the parent category, if any",
+        "raw": [
+          "parent_category_id",
+          "int",
+          "",
+          "",
+          "Id of the parent category, if any",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the category",
+      "Name of the category",
+      "Id of the parent category, if any"
+    ]
+  },
+  "product.product_variants": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "core.order_item_variants.product_variant_id",
+        "note": "Id of the product variant",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "core.order_item_variants.product_variant_id",
+          "Id of the product variant",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Name of the product variant",
+        "raw": [
+          "name",
+          "varchar",
+          "",
+          "",
+          "Name of the product variant",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "product_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "products.id",
+        "note": "Id of the product",
+        "raw": [
+          "product_id",
+          "int",
+          "not_null",
+          "products.id",
+          "Id of the product",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the product variant",
+      "Name of the product variant",
+      "Id of the product"
+    ]
+  },
+  "product.product_tags": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK",
+        "refs": "product_tags_map.tag_id",
+        "note": "Id of the product tag",
+        "raw": [
+          "id",
+          "int",
+          "PK",
+          "product_tags_map.tag_id",
+          "Id of the product tag",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Name of the product tag",
+        "raw": [
+          "name",
+          "varchar",
+          "",
+          "",
+          "Name of the product tag",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "A label to identification or to give other information for the product.\nExample a product of T-shirt may has some tags as clothes, unisex, children.",
+      "Recent activities",
+      "Id of the product tag",
+      "Name of the product tag"
+    ]
+  },
+  "product.product_tags_map": {
+    "columns": [
+      {
+        "name": "product_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "products.id",
+        "note": "The product id",
+        "raw": [
+          "product_id",
+          "int",
+          "not_null",
+          "products.id",
+          "The product id",
+          "a year ago"
+        ]
+      },
+      {
+        "name": "tag_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "product_tags.id",
+        "note": "The tag id",
+        "raw": [
+          "tag_id",
+          "int",
+          "not_null",
+          "product_tags.id",
+          "The tag id",
+          "a year ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "The product id",
+      "The tag id"
+    ]
+  },
+  "cart.cart_items": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "",
+        "note": "Id of the cart item",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "",
+          "Id of the cart item",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "user_id",
+        "type": "int",
+        "settings": "not_null\nunique",
+        "refs": "core.users.id",
+        "note": "",
+        "raw": [
+          "user_id",
+          "int",
+          "not_null\nunique",
+          "core.users.id",
+          "",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "product_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "product.products.id",
+        "note": "The product id",
+        "raw": [
+          "product_id",
+          "int",
+          "not_null",
+          "product.products.id",
+          "The product id",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "quantity",
+        "type": "int",
+        "settings": "check: quantity > 0",
+        "refs": "",
+        "note": "Default: 1\n\nQuantity of the item",
+        "raw": [
+          "quantity",
+          "int",
+          "check: quantity > 0",
+          "",
+          "Default: 1\n\nQuantity of the item",
+          "7 months ago"
+        ]
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "settings": "",
+        "refs": "",
+        "note": "Default: now()\n\nWhen item added to cart",
+        "raw": [
+          "created_at",
+          "datetime",
+          "",
+          "",
+          "Default: now()\n\nWhen item added to cart",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the cart item",
+      "The product id",
+      "Quantity of the item",
+      "When item added to cart"
+    ]
+  },
+  "review.reviews": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "",
+        "note": "Id of the review",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "",
+          "Id of the review",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "user_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "core.users.id",
+        "note": "The user id who wrote the review",
+        "raw": [
+          "user_id",
+          "int",
+          "not_null",
+          "core.users.id",
+          "The user id who wrote the review",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "product_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "product.products.id",
+        "note": "The reviewed product id",
+        "raw": [
+          "product_id",
+          "int",
+          "not_null",
+          "product.products.id",
+          "The reviewed product id",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "rating",
+        "type": "int",
+        "settings": "check: rating >= 0 AND rating <= 5",
+        "refs": "",
+        "note": "Rating of the review",
+        "raw": [
+          "rating",
+          "int",
+          "check: rating >= 0 AND rating <= 5",
+          "",
+          "Rating of the review",
+          "7 months ago"
+        ]
+      },
+      {
+        "name": "comment",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Comment of the review",
+        "raw": [
+          "comment",
+          "varchar",
+          "",
+          "",
+          "Comment of the review",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "settings": "",
+        "refs": "",
+        "note": "Default: now()\n\nWhen review created",
+        "raw": [
+          "created_at",
+          "datetime",
+          "",
+          "",
+          "Default: now()\n\nWhen review created",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the review",
+      "The user id who wrote the review",
+      "The reviewed product id",
+      "Rating of the review",
+      "Comment of the review",
+      "When review created"
+    ]
+  },
+  "wishlist.wishlists": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "wishlist_items.wishlist_id",
+        "note": "Id of the wishlist",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "wishlist_items.wishlist_id",
+          "Id of the wishlist",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "user_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "core.users.id",
+        "note": "Id of the user who created the wishlist",
+        "raw": [
+          "user_id",
+          "int",
+          "not_null",
+          "core.users.id",
+          "Id of the user who created the wishlist",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "name",
+        "type": "varchar",
+        "settings": "",
+        "refs": "",
+        "note": "Name of the wishlist",
+        "raw": [
+          "name",
+          "varchar",
+          "",
+          "",
+          "Name of the wishlist",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the wishlist",
+      "Id of the user who created the wishlist",
+      "Name of the wishlist"
+    ]
+  },
+  "wishlist.wishlist_items": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "int",
+        "settings": "PK\nincrement",
+        "refs": "",
+        "note": "Id of the wishlist item",
+        "raw": [
+          "id",
+          "int",
+          "PK\nincrement",
+          "",
+          "Id of the wishlist item",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "wishlist_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "wishlists.id",
+        "note": "Id of the wishlist",
+        "raw": [
+          "wishlist_id",
+          "int",
+          "not_null",
+          "wishlists.id",
+          "Id of the wishlist",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "product_id",
+        "type": "int",
+        "settings": "not_null",
+        "refs": "product.products.id",
+        "note": "Id of the product in the wishlist item",
+        "raw": [
+          "product_id",
+          "int",
+          "not_null",
+          "product.products.id",
+          "Id of the product in the wishlist item",
+          "3 years ago"
+        ]
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "settings": "",
+        "refs": "",
+        "note": "Default: now()\n\nWhen wishlist item created",
+        "raw": [
+          "created_at",
+          "datetime",
+          "",
+          "",
+          "Default: now()\n\nWhen wishlist item created",
+          "3 years ago"
+        ]
+      }
+    ],
+    "potentialNotes": [
+      "Recent activities",
+      "Id of the wishlist item",
+      "Id of the wishlist",
+      "Id of the product in the wishlist item",
+      "When wishlist item created"
+    ]
+  }
+}

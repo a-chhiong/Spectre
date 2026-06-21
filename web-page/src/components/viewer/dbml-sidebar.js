@@ -5,7 +5,11 @@ export class DbmlSidebar extends LitElement {
     database: { type: Object },
     groupingMode: { type: String }, // 'tableGroup' or 'schema'
     collapsedPaths: { type: Object },
-    isSidebarCollapsed: { type: Boolean }
+    isSidebarCollapsed: { type: Boolean },
+    searchValue: { type: String },
+    searchPlaceholder: { type: String },
+    activeNodePath: { type: String },
+    _filterSet: { state: true }
   };
 
   createRenderRoot() {
@@ -18,10 +22,105 @@ export class DbmlSidebar extends LitElement {
     this.groupingMode = 'schema';
     this.collapsedPaths = new Set();
     this.isSidebarCollapsed = false;
+    this.searchValue = '';
+    this.searchPlaceholder = 'Search...';
+    this.activeNodePath = null;
+    this._filterSet = new Set();
+    this._searchDebounceTimer = null;
+    
+    this._isResizing = false;
+    this._hasDragged = false;
+    this._startX = 0;
+    this._startWidth = 0;
+  }
+
+  handleDragStart = (e) => {
+    e.preventDefault();
+    this._isResizing = true;
+    this._hasDragged = false;
+    this._startX = e.clientX;
+    const sidebarEl = this.renderRoot.querySelector('.dbml-sidebar');
+    this._startWidth = sidebarEl.getBoundingClientRect().width;
+    
+    document.addEventListener('mousemove', this.handleDrag);
+    document.addEventListener('mouseup', this.handleDragEnd);
+    document.body.style.cursor = 'col-resize';
+  };
+
+  handleDrag = (e) => {
+    if (!this._isResizing) return;
+    
+    const diff = e.clientX - this._startX;
+    if (Math.abs(diff) > 3) {
+      this._hasDragged = true;
+    }
+    
+    let newWidth = this._startWidth + diff;
+    if (newWidth < 200) newWidth = 200;
+    if (newWidth > 400) newWidth = 400;
+    
+    document.documentElement.style.setProperty('--sidebar-width', `${newWidth}px`);
+  };
+
+  handleDragEnd = () => {
+    this._isResizing = false;
+    document.removeEventListener('mousemove', this.handleDrag);
+    document.removeEventListener('mouseup', this.handleDragEnd);
+    document.body.style.cursor = '';
+  };
+
+  willUpdate(changedProperties) {
+    if (changedProperties.has('database') || changedProperties.has('searchValue')) {
+      this._applySearchFilter();
+    }
+  }
+
+  _applySearchFilter() {
+    if (!this.database || !this.searchValue) {
+      this._filterSet = new Set();
+      return;
+    }
+    const searchTerm = this.searchValue.toLowerCase().trim();
+    if (!searchTerm) {
+      this._filterSet = new Set();
+      return;
+    }
+    this._filterSet = new Set();
+    // Collect all searchable names (tables, enums, groups, schemas)
+    const searchNames = [];
+    this.database.schemas.forEach(schema => {
+      searchNames.push(schema.name || 'public');
+      schema.tables.forEach(t => searchNames.push(t.name));
+      schema.enums.forEach(e => searchNames.push(e.name));
+      schema.tableGroups.forEach(g => searchNames.push(g.name));
+    });
+    searchNames.forEach(name => {
+      if (name.toLowerCase().includes(searchTerm)) {
+        this._filterSet.add(name.toLowerCase());
+      }
+    });
+    // When searching, auto-expand all nodes to show matches
+    if (searchTerm && this._filterSet.size > 0) {
+      this.collapsedPaths = new Set();
+    }
+  }
+
+  handleSearch(e) {
+    this.searchValue = e.target.value;
+  }
+
+  clearSearch() {
+    this.searchValue = '';
+  }
+
+  setActiveNode(path) {
+    this.activeNodePath = path;
+    this.requestUpdate();
   }
 
   setGroupingMode(mode) {
     this.groupingMode = mode;
+    this.dispatchEvent(new CustomEvent('grouping-mode-change', { detail: { mode }, bubbles: true, composed: true }));
     this.requestUpdate();
   }
 
@@ -97,13 +196,14 @@ export class DbmlSidebar extends LitElement {
           };
           
           (tg.tables || []).forEach(groupTable => {
+            const tSchema = groupTable.schemaName || schemaName;
             const tName = groupTable.tableName || groupTable.name;
-            // Track globally by name
-            groupedTableNames.add(tName);
+            // Track globally by schema+name
+            groupedTableNames.add(`${tSchema}-${tName}`);
             groupNode.children.push({
               name: tName,
               type: 'table',
-              path: `table-${schemaName}-${tName}`
+              path: `table-${tSchema}-${tName}`
             });
           });
           
@@ -114,7 +214,7 @@ export class DbmlSidebar extends LitElement {
       // Standalone tables (not in any group)
       this.database.schemas.forEach(schema => {
         const schemaName = schema.name || 'public';
-        const standaloneTables = schema.tables.filter(t => !groupedTableNames.has(t.name));
+        const standaloneTables = schema.tables.filter(t => !groupedTableNames.has(`${schemaName}-${t.name}`));
         standaloneTables.forEach(table => {
           rootNodes.push({
             name: table.name,
@@ -137,8 +237,28 @@ export class DbmlSidebar extends LitElement {
     return rootNodes;
   }
 
+  _isNodeVisible(node) {
+    if (!this.searchValue) return true;
+    const term = this.searchValue.toLowerCase().trim();
+    if (!term) return true;
+
+    // Check if the node itself matches
+    const nameMatches = node.name && node.name.toLowerCase().includes(term);
+    if (nameMatches) return true;
+
+    // Check if any child matches
+    if (node.children && node.children.length > 0) {
+      return node.children.some(child => this._isNodeVisible(child));
+    }
+
+    return false;
+  }
+
   renderSidebarNode(node, depth = 0) {
-    const isCollapsible = node.children && node.children.length > 0;
+    if (!this._isNodeVisible(node)) return html``;
+
+    const visibleChildren = (node.children || []).filter(child => this._isNodeVisible(child));
+    const isCollapsible = visibleChildren.length > 0;
     const isCollapsed = this.collapsedPaths.has(node.path);
     const indentStyles = Array.from({ length: depth }).map(() => html`<div class="dbml-tree-indent"></div>`);
     
@@ -154,21 +274,24 @@ export class DbmlSidebar extends LitElement {
       icon = html`<svg class="dbml-tree-icon enum" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>`;
     }
 
+    const isActive = this.activeNodePath === node.path;
+
     return html`
       <div 
-        class="dbml-tree-node" 
-        @click=${() => {
-          if (isCollapsible) {
-            this.toggleNode(node.path);
-          } else {
-            this.scrollToEntity(node.path);
-          }
-        }}
+        class="dbml-tree-node ${isActive ? 'active' : ''}" 
+        @click=${() => this.scrollToEntity(node.path)}
       >
         ${indentStyles}
         ${isCollapsible 
           ? html`
-              <svg class="dbml-tree-arrow ${!isCollapsed ? 'open' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg 
+                class="dbml-tree-arrow ${!isCollapsed ? 'open' : ''}" 
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                @click=${(e) => {
+                  e.stopPropagation();
+                  this.toggleNode(node.path);
+                }}
+              >
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             ` 
@@ -176,8 +299,9 @@ export class DbmlSidebar extends LitElement {
         }
         ${icon}
         <span>${node.name}</span>
+        ${isCollapsible ? html`<span class="node-count">${visibleChildren.length}</span>` : ''}
       </div>
-      ${isCollapsible && !isCollapsed ? node.children.map(child => this.renderSidebarNode(child, depth + 1)) : ''}
+      ${isCollapsible && !isCollapsed ? visibleChildren.map(child => this.renderSidebarNode(child, depth + 1)) : ''}
     `;
   }
 
@@ -187,6 +311,20 @@ export class DbmlSidebar extends LitElement {
     return html`
       <div class="dbml-sidebar-wrapper">
         <div class="dbml-sidebar ${this.isSidebarCollapsed ? 'collapsed' : ''}">
+          <!-- Search Input -->
+          <div class="dbml-search">
+            <input
+              type="search"
+              class="dbml-search-input"
+              placeholder="${this.searchPlaceholder}"
+              .value=${this.searchValue}
+              @input=${this.handleSearch}
+            />
+            ${this.searchValue
+              ? html`<button class="dbml-search-clear" @click=${this.clearSearch}>×</button>`
+              : ''}
+          </div>
+          
           <div class="dbml-sidebar-content" style="padding-top: 12px;">
             ${sidebarTree.map(node => this.renderSidebarNode(node))}
           </div>
@@ -199,7 +337,15 @@ export class DbmlSidebar extends LitElement {
           </div>
         </div>
         
-        <div class="dbml-sidebar-handle" @click=${() => { this.isSidebarCollapsed = !this.isSidebarCollapsed; }} title="Toggle Sidebar">
+        <div class="dbml-sidebar-handle" 
+          @mousedown=${this.handleDragStart}
+          @click=${() => { 
+            if (!this._hasDragged) {
+              this.isSidebarCollapsed = !this.isSidebarCollapsed; 
+            }
+          }} 
+          title="Drag to resize, click to toggle"
+        >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="handle-icon ${this.isSidebarCollapsed ? 'collapsed' : ''}">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>

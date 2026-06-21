@@ -1,105 +1,4 @@
-// Basic templates for new projects
-export const DEFAULT_YAML = `openapi: 3.0.3
-info:
-  title: OpenStudio API
-  description: 
-    $ref: "../markdown/description.md"
-  version: 1.0.0
-servers:
-  - url: https://api.example.com/v1
-paths:
-  /users:
-    $ref: "./paths/users.yaml"
-`;
-
-export const USER_PATH_YAML = `get:
-  summary: Retrieve a list of users
-  description: Returns a list of users in the system.
-  responses:
-    '200':
-      description: A successful response
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: "../components/schemas/user.yaml"
-`;
-
-export const USER_SCHEMA_YAML = `type: object
-properties:
-  id:
-    type: string
-    format: uuid
-    description: Unique user identifier
-  username:
-    type: string
-    description: User's registration name
-  email:
-    type: string
-    format: email
-`;
-
-export const DEFAULT_MD = `# OpenStudio Project Documentation
-
-Welcome to your **OpenStudio** project. This Markdown file serves as supporting documentation.
-
-## Diagram Example (Mermaid)
-
-Here is a sequence diagram imported from a standalone Mermaid file:
-
-@import "../mermaid/template.mmd"
-
-\`\`\`mermaid
-sequenceDiagram
-  participant User
-  participant Editor
-  participant Previewer
-  User->>Editor: Type YAML/Markdown
-  Editor->>Previewer: Update State
-  Previewer->>User: Display live docs & diagrams
-\`\`\`
-
-## Diagram Example (PlantUML)
-
-Here is a component diagram imported from a standalone PlantUML file:
-
-@import "../plantuml/template.puml"
-
-\`\`\`plantuml
-@startuml
-actor User
-boundary "OpenStudio" as Studio
-control "Project State" as State
-
-User -> Studio : Edit Files
-Studio -> State : Debounce Autosave
-State -> Studio : Update Live Preview
-@enduml
-\`\`\`
-`;
-
-export const DEFAULT_MERMAID = `sequenceDiagram
-  participant User
-  participant Editor
-  participant Previewer
-  User->>Editor: Type YAML/Markdown
-  Editor->>Previewer: Update State
-  Previewer->>User: Display live docs & diagrams
-`;
-
-export const DEFAULT_PLANTUML = `@startuml
-actor User
-boundary "OpenStudio" as Studio
-control "Project State" as State
-
-User -> Studio : Edit Files
-Studio -> State : Debounce Autosave
-State -> Studio : Update Live Preview
-@enduml
-`;
-
-export const DEFAULT_DBML_ECOMMERCE = `// ===========================================================================
+// ===========================================================================
 // PROJECT DEFINITION & DOCUMENTATION
 // ===========================================================================
 
@@ -141,8 +40,8 @@ Table core.users {
   username varchar [note: 'Username chosen by the user']
   password varchar [note: 'Hashed password of the user']
   phone_number varchar [note: 'Phone number of the user']
-  last_login timestamp [note: 'Timestamp of the user\\'s last login']
-  avatar_url varchar [note: 'URL of the user\\'s profile picture']
+  last_login timestamp [note: 'Timestamp of the user\'s last login']
+  avatar_url varchar [note: 'URL of the user\'s profile picture']
   created_at timestamp [note: 'When user created']
   country_code int [note: 'Country of the user']
 
@@ -195,10 +94,10 @@ Table core.merchants {
   status orders_status
   merchant_name varchar
   address varchar [note: 'Address of the merchant']
-  website_url varchar [note: 'URL of the merchant\\'s website']
+  website_url varchar [note: 'URL of the merchant\'s website']
   phone_number varchar [note: 'Phone number of the merchant']
   email varchar [note: 'Email address of the merchant']
-  logo_url varchar [note: 'URL of the merchant\\'slogo']
+  logo_url varchar [note: 'URL of the merchant\'slogo']
   created_at datetime [note: 'Default: now()  When merchant created']
 
   Note: '''
@@ -337,7 +236,7 @@ TableGroup "User Management" {
 }
 
 // ===== TABLEGROUPS =====
-TableGroup "Order Management" [note: 'Contains tables relating to product ordering system'] {
+TableGroup "Order Management" {
   core.orders
   core.order_items
   core.order_item_variants
@@ -353,7 +252,7 @@ TableGroup "Product Management" {
   product.product_tags_map
 }
 
-TableGroup "Wishlist Management" [note: 'Contains tables relating to the user wishlist system'] {
+TableGroup "Wishlist Management" {
   wishlist.wishlists
   wishlist.wishlist_items
 }
@@ -415,17 +314,3 @@ Ref: wishlist.wishlist_items.product_id > product.products.id
 
 // Promotions
 Ref: core.promotions.product_id > product.products.id
-`;
-
-// Default Project folder structure helper function
-export function getInitialProjectFiles(key) {
-  return [
-    { projectKey: key, path: 'openapi/openapi.yaml', content: DEFAULT_YAML, type: 'file' },
-    { projectKey: key, path: 'openapi/paths/users.yaml', content: USER_PATH_YAML, type: 'file' },
-    { projectKey: key, path: 'openapi/components/schemas/user.yaml', content: USER_SCHEMA_YAML, type: 'file' },
-    { projectKey: key, path: 'mermaid/template.mmd', content: DEFAULT_MERMAID, type: 'file' },
-    { projectKey: key, path: 'plantuml/template.puml', content: DEFAULT_PLANTUML, type: 'file' },
-    { projectKey: key, path: 'markdown/description.md', content: DEFAULT_MD, type: 'file' },
-    { projectKey: key, path: 'dbml/ecommerce.dbml', content: DEFAULT_DBML_ECOMMERCE, type: 'file' }
-  ];
-}

@@ -20,12 +20,11 @@
 }
 
 .dbml-sidebar {
-  width: 250px;
+  width: var(--sidebar-width, 250px);
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: width 0.2s ease;
 }
 
 .dbml-sidebar.collapsed {
@@ -43,9 +42,9 @@
   border: 1px solid var(--border-color);
   border-radius: 6px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  cursor: pointer;
+  align-items: center;
+  cursor: ew-resize;
   z-index: 10;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   color: var(--text-secondary);
@@ -105,12 +104,40 @@
   padding: 8px 0;
 }
 
+.dbml-viewer-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .dbml-main-content {
   flex: 1;
   overflow-y: auto;
   position: relative;
   background: var(--bg-primary);
   padding: 24px;
+}
+
+.dbml-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 24px;
+  font-size: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+}
+
+.dbml-breadcrumb .sep {
+  opacity: 0.4;
+}
+
+.dbml-breadcrumb .active {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 /* Unified Scrollbar for Sidebar */
@@ -143,6 +170,16 @@
   color: var(--text-secondary);
   transition: background var(--transition-fast);
   white-space: nowrap;
+}
+
+.node-count {
+  font-size: 0.65rem;
+  background: var(--bg-tertiary);
+  color: var(--text-muted, var(--text-secondary));
+  padding: 2px 6px;
+  border-radius: 999px;
+  margin-left: 6px;
+  font-weight: 500;
 }
 
 .dbml-tree-node:hover {
@@ -212,3 +249,165 @@
   margin-top: 1rem;
   font-weight: 500;
 }
+
+/* ========== Phase 1: Search UI ========== */
+.dbml-search {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dbml-search-input {
+  padding: 6px 12px;
+  padding-right: 28px;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.dbml-search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb, 59, 130, 246), 0.2);
+}
+
+.dbml-search-clear {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.dbml-search-clear:hover {
+  color: var(--text-primary);
+}
+
+/* ========== Phase 1: Scroll Spy Highlight ========== */
+.highlighted {
+  animation: highlight-pulse 1.5s ease;
+}
+
+@keyframes highlight-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(var(--accent-color-rgb, 59, 130, 246), 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(var(--accent-color-rgb, 59, 130, 246), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--accent-color-rgb, 59, 130, 246), 0); }
+}
+
+/* ========== Phase 1: Collapsible Table Sections ========== */
+.table-section {
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  background: var(--bg-primary);
+}
+
+.table-section > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  list-style-position: outside;
+  font-size: 0.9rem;
+}
+
+.table-section > summary::marker {
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+}
+
+.table-section.collapsed > summary::marker {
+  transform: rotate(-90deg);
+}
+
+.table-section > summary:hover {
+  background: var(--bg-tertiary);
+}
+
+.table-section-content {
+  padding: 1rem;
+}
+
+/* ========== Phase 1: Copy to Clipboard ========== */
+.copy-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.copy-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--accent-color);
+}
+
+.copy-btn.copied {
+  color: var(--success-color, #10b981);
+  border-color: var(--success-color, #10b981);
+}
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--glass-shadow);
+  z-index: 10000;
+  font-size: 0.85rem;
+  animation: toast-slide-up 0.3s ease;
+}
+
+.toast.toast-success {
+  border-left: 3px solid var(--success-color, #10b981);
+}
+
+@keyframes toast-slide-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ========== Phase 1: FK Link Styling ========== */
+.fk-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.fk-link:hover {
+  text-decoration: underline;
+  color: var(--accent-color-hover, #3b82f6);
+}
+
+.dbml-diagram-viewer {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+

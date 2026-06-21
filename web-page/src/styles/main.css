@@ -70,6 +70,8 @@ html, body {
   .folder-tree-col,
   .editor-col,
   .splitter-col,
+  .dbml-sidebar-wrapper,
+  tool-bar,
   .no-print {
     display: none !important;
   }

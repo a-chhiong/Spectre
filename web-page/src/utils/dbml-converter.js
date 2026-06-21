@@ -50,22 +50,97 @@ function renderHtmlTable(headers, rows) {
  * @param {string} activeAbsPath Optional path to filter tables by
  * @returns {string} Compiled markdown string
  */
-export function compileDbmlToMarkdown(database, entrypointName, activeAbsPath) {
+export function compileDbmlToMarkdown(database, entrypointName, activeNodePath, options = {}) {
   if (!database) return '# Error: Compiled database schema is empty.';
 
-  const isParent = (entrypointName || '').toLowerCase().endsWith('index.dbml');
+  const { groupingMode = 'schema', isExport = false } = options;
   const exported = database.export();
-  const schema = exported.schemas[0] || { tables: [], enums: [], tableGroups: [], refs: [] };
   
-  const tables = schema.tables || [];
-  const enums = schema.enums || [];
-  const tableGroups = schema.tableGroups || [];
-  const refs = schema.refs || [];
+  // Consolidate all tables, enums, tablegroups, and refs from all schemas
+  const allTables = [];
+  const allEnums = [];
+  const allTableGroups = [];
+  const refs = [];
 
-  // Helper to determine if a column is a Foreign Key
-  const isForeignKey = (tableName, columnName) => {
+  for (const schema of exported.schemas || []) {
+    const schemaName = schema.name || 'public';
+    if (schema.tables) {
+      schema.tables.forEach(t => {
+        t.schemaName = schemaName;
+        allTables.push(t);
+      });
+    }
+    if (schema.enums) {
+      schema.enums.forEach(e => {
+        e.schemaName = schemaName;
+        allEnums.push(e);
+      });
+    }
+    if (schema.tableGroups) {
+      schema.tableGroups.forEach(tg => {
+        tg.schemaName = schemaName;
+        allTableGroups.push(tg);
+      });
+    }
+    if (schema.refs) {
+      schema.refs.forEach(r => {
+        r.schemaName = schemaName;
+        refs.push(r);
+      });
+    }
+  }
+
+  // Build a set of enum names for type detection
+  const enumNames = new Set(allEnums.map(e => e.name));
+
+  // --- Isolated Rendering Filtering ---
+  let tables = [];
+  let enums = [];
+  let tableGroups = [];
+  
+  if (isExport) {
+    tables = allTables;
+    enums = allEnums;
+    tableGroups = allTableGroups;
+  } else {
+    if (!activeNodePath) {
+      // Root View: Show full document (TOC + all tables/enums)
+      tables = allTables;
+      enums = allEnums;
+      tableGroups = groupingMode === 'tableGroup' ? allTableGroups : [];
+    } else if (activeNodePath.startsWith('schema-')) {
+      const sName = activeNodePath.replace('schema-', '');
+      tables = allTables.filter(t => t.schemaName === sName);
+      enums = allEnums.filter(e => e.schemaName === sName);
+      tableGroups = []; 
+    } else if (activeNodePath.startsWith('tablegroup-')) {
+      const parts = activeNodePath.split('-');
+      const sName = parts[1];
+      const gName = parts.slice(2).join('-');
+      const group = allTableGroups.find(g => g.name === gName && g.schemaName === sName);
+      if (group) {
+        tableGroups = [group];
+        const gTableNames = (group.tables || []).map(t => t.tableName || t.name);
+        tables = allTables.filter(t => gTableNames.includes(t.name));
+      }
+    } else if (activeNodePath.startsWith('table-')) {
+      const parts = activeNodePath.split('-');
+      const sName = parts[1];
+      const tName = parts.slice(2).join('-');
+      tables = allTables.filter(t => t.name === tName && t.schemaName === sName);
+    } else if (activeNodePath.startsWith('enum-')) {
+      const parts = activeNodePath.split('-');
+      const sName = parts[1];
+      const eName = parts.slice(2).join('-');
+      enums = allEnums.filter(e => e.name === eName && e.schemaName === sName);
+    }
+  }
+
+  // Local helper to check if a column is a foreign key
+  const isForeignKey = (schemaName, tableName, columnName) => {
     return refs.some(ref => 
       ref.endpoints.some(ep => 
+        (ep.schemaName || 'public') === schemaName &&
         ep.tableName === tableName && 
         ep.fieldNames.includes(columnName) && 
         ep.relation === '*'
@@ -73,117 +148,164 @@ export function compileDbmlToMarkdown(database, entrypointName, activeAbsPath) {
     );
   };
 
-  if (!isParent) {
-    // --- CHILD MODE: Render single Mermaid diagram only ---
-    let md = `# Diagram: ${entrypointName.replace(/\.[^/.]+$/, '')}\n\n`;
-    
-    // Normalization helper for relative paths
-    const getNormalizedPath = (p) => {
-      if (!p) return '';
-      return p.replace(/^\//, '').toLowerCase();
-    };
-    
-    const activeNorm = getNormalizedPath(activeAbsPath);
-    
-    const belongsToActive = (tableName) => {
-      if (!activeNorm) return true;
-      const rawTable = database.schemas[0]?.tables?.find(t => t.name === tableName);
-      const rawPath = rawTable?.token?.filepath?.path;
-      if (!rawPath) return true;
-      return getNormalizedPath(rawPath) === activeNorm;
-    };
-
-    const childTables = tables.filter(t => belongsToActive(t.name));
-
-    if (childTables.length === 0) {
-      md += '*No tables defined in this schema.*';
-      return md;
-    }
-
-    // Filter relationships to only those where at least one endpoint is inside the child tables
-    const childTableNames = childTables.map(ct => ct.name);
-    const childRefs = refs.filter(ref =>
-      ref.endpoints.some(ep => childTableNames.includes(ep.tableName))
-    );
-
-    const hasHeaderColors = childTables.some(t => t.headerColor);
-    if (hasHeaderColors) {
-      md += '```mermaid\n---\nconfig:\n  themeCSS: |\n';
-      for (const table of childTables) {
-        if (table.headerColor) {
-          md += `    [id|="entity-${table.name}"] rect:first-of-type {\n      fill: ${table.headerColor} !important;\n    }\n`;
+  // Local helper to find the target of a foreign key
+  const getForeignKeyRef = (schemaName, tableName, columnName) => {
+    for (const ref of refs) {
+      const sourceEp = ref.endpoints.find(ep => 
+        (ep.schemaName || 'public') === schemaName &&
+        ep.tableName === tableName && 
+        ep.fieldNames.includes(columnName) && 
+        ep.relation === '*'
+      );
+      if (sourceEp) {
+        const targetEp = ref.endpoints.find(ep => ep !== sourceEp);
+        if (targetEp) {
+          return {
+            targetSchema: targetEp.schemaName || 'public',
+            targetTable: targetEp.tableName,
+            targetColumn: targetEp.fieldNames[0]
+          };
         }
       }
-      md += '---\nerDiagram\n';
-    } else {
-      md += '```mermaid\nerDiagram\n';
     }
+    return null;
+  };
 
-    // 1. Table columns
-    for (const table of childTables) {
-      md += `    ${table.name} {\n`;
-      for (const field of table.fields) {
-        const typeName = cleanMermaidType(field.type.type_name);
-        const pkAttr = field.pk ? ' PK' : '';
-        const fkAttr = isForeignKey(table.name, field.name) ? ' FK' : '';
-        md += `        ${typeName} ${field.name}${pkAttr}${fkAttr}\n`;
+  // Helper: find which TableGroup a table belongs to
+  const getTableGroup = (tableName) => {
+    for (const tg of allTableGroups) {
+      const groupTables = tg.tables || [];
+      if (groupTables.some(gt => (gt.tableName || gt.name) === tableName)) {
+        return tg.name;
       }
-      md += '    }\n\n';
     }
+    return null;
+  };
 
-    // 2. Table relationships
-    for (const ref of childRefs) {
-      const ep1 = ref.endpoints[0];
-      const ep2 = ref.endpoints[1];
-      const relSym = getMermaidRelation(ep1.relation, ep2.relation);
-      md += `    ${ep1.tableName} ${relSym} ${ep2.tableName} : ""\n`;
+  // Helper: get all refs where this table is an endpoint
+  const getTableRefs = (schemaName, tableName) => {
+    return refs.filter(ref => ref.endpoints.some(ep => 
+      ep.tableName === tableName && (ep.schemaName || 'public') === schemaName
+    ));
+  };
+
+  // Schema color palette (consistent colors per schema)
+  const schemaColors = {};
+  const colorPalette = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+  let colorIdx = 0;
+  const getSchemaColor = (schemaName) => {
+    if (!schemaColors[schemaName]) {
+      schemaColors[schemaName] = colorPalette[colorIdx % colorPalette.length];
+      colorIdx++;
     }
+    return schemaColors[schemaName];
+  };
 
-    md += '```\n';
-    return md;
-  }
-
-  // --- PARENT MODE: Render Full Documentation ---
+  // === Build Document ===
   const project = exported.project || database.shallowExport() || {};
   const projName = project.name || 'OpenStudio Project';
-  const dbType = project.databaseType || project.database_type || 'Unknown';
+  const dbType = project.databaseType || project.database_type || '';
   const projNote = project.note || '';
 
-  let md = `# Database Documentation: ${projName}\n`;
-  md += `> **Database Type**: ${dbType}\n`;
-  if (projNote) {
-    md += `> \n> ${projNote}\n`;
-  }
-  md += '\n---\n\n';
+  let md = '';
 
-  // 1. Clickable Table of Contents
-  if (tableGroups.length > 0) {
-    md += '## 1. Table Groups\n\n';
+  // --- Project Header ---
+  md += `<div class="dbml-project-header">\n`;
+  md += `  <h1 class="dbml-project-title">${projName}</h1>\n`;
+  if (dbType) {
+    md += `  <div class="dbml-project-meta"><span class="dbdocs-badge dbdocs-badge-default">${dbType}</span></div>\n`;
+  }
+  if (projNote && (!activeNodePath || isExport)) {
+    // Render project note as markdown (supports headings, bullets, bold)
+    md += `  <div class="dbml-project-note">\n\n${projNote}\n\n</div>\n`;
+  }
+  md += `</div>\n\n---\n\n`;
+
+  // --- Table of Contents & Grouped ER Diagrams ---
+  if (groupingMode === 'schema') {
+    const uniqueSchemas = [...new Set(tables.map(t => t.schemaName || 'public'))];
+    if (uniqueSchemas.length > 0) {
+      md += '<div class="toc-container">\n';
+      md += '  <div class="toc-title">Schemas</div>\n';
+      md += '  <ul class="toc-list">\n';
+      for (const sName of uniqueSchemas) {
+        const anchor = 'schema-' + sName.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+        const schemaTables = tables.filter(t => (t.schemaName || 'public') === sName);
+        md += `    <li class="toc-item"><a href="#${anchor}">${sName}</a> <span class="toc-count">(${schemaTables.length})</span></li>\n`;
+      }
+      md += '  </ul>\n';
+      md += '</div>\n\n---\n\n';
+
+      // Schema ERDs
+      for (const sName of uniqueSchemas) {
+        const anchor = 'schema-' + sName.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+        md += `<div id="${anchor}">\n\n`;
+        md += `### Schema: ${sName}\n\n`;
+
+        const schemaTables = tables.filter(t => (t.schemaName || 'public') === sName);
+        const schemaTableNames = schemaTables.map(t => t.name);
+        
+        const schemaHeaderTables = schemaTables.filter(t => t.headerColor);
+
+        if (schemaHeaderTables.length > 0) {
+          md += '```mermaid\n---\nconfig:\n  themeCSS: |\n';
+          for (const table of schemaHeaderTables) {
+            md += `    [id|="entity-${table.name}"] rect:first-of-type {\n      fill: ${table.headerColor} !important;\n    }\n`;
+          }
+          md += '---\nerDiagram\n';
+        } else {
+          md += '```mermaid\nerDiagram\n';
+        }
+
+        for (const table of schemaTables) {
+          md += `    ${table.name} {\n`;
+          for (const field of table.fields) {
+            const typeName = cleanMermaidType(field.type.type_name);
+            const pkAttr = field.pk ? ' PK' : '';
+            const fkAttr = isForeignKey(table.schemaName, table.name, field.name) ? ' FK' : '';
+            md += `        ${typeName} ${field.name}${pkAttr}${fkAttr}\n`;
+          }
+          md += '    }\n\n';
+        }
+
+        for (const ref of refs) {
+          const ep1 = ref.endpoints[0];
+          const ep2 = ref.endpoints[1];
+          if (schemaTableNames.includes(ep1.tableName) && (ep1.schemaName || 'public') === sName &&
+              schemaTableNames.includes(ep2.tableName) && (ep2.schemaName || 'public') === sName) {
+            const relSym = getMermaidRelation(ep1.relation, ep2.relation);
+            md += `    ${ep1.tableName} ${relSym} ${ep2.tableName} : ""\n`;
+          }
+        }
+
+        md += '```\n';
+        md += '</div>\n\n---\n\n';
+      }
+    }
+  } else if (tableGroups.length > 0) {
+    // Table Groups TOC
     md += '<div class="toc-container">\n';
-    md += '  <div class="toc-title">Domains / Modules</div>\n';
+    md += '  <div class="toc-title">Table Groups</div>\n';
     md += '  <ul class="toc-list">\n';
     for (const group of tableGroups) {
       const anchor = 'tablegroup-' + group.name.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
-      md += `    <li class="toc-item"><a href="#${anchor}">${group.name}</a></li>\n`;
+      const groupTables = group.tables || [];
+      md += `    <li class="toc-item"><a href="#${anchor}">${group.name}</a> <span class="toc-count">(${groupTables.length})</span></li>\n`;
     }
     md += '  </ul>\n';
     md += '</div>\n\n---\n\n';
-  }
 
-  // 2. Grouped ER Diagrams
-  if (tableGroups.length > 0) {
-    md += '## 2. ER Diagrams\n\n';
+    // Grouped ER Diagrams
     for (const group of tableGroups) {
       const anchor = 'tablegroup-' + group.name.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
       md += `<div id="${anchor}">\n\n`;
-      md += `### TableGroup: ${group.name}\n`;
-      md += `*Visual representation of the ${group.name} module and relationships.*\n\n`;
+      md += `### TableGroup: ${group.name}\n\n`;
 
       const groupTables = group.tables || [];
-      const groupTableNames = groupTables.map(gt => gt.tableName);
+      const groupTableNames = groupTables.map(gt => gt.tableName || gt.name);
       
       const groupHeaderTables = groupTableNames
-        .map(name => tables.find(t => t.name === name))
+        .map(name => allTables.find(t => t.name === name))
         .filter(t => t && t.headerColor);
 
       if (groupHeaderTables.length > 0) {
@@ -196,22 +318,20 @@ export function compileDbmlToMarkdown(database, entrypointName, activeAbsPath) {
         md += '```mermaid\nerDiagram\n';
       }
 
-      // Render columns for tables inside this group
       for (const tableName of groupTableNames) {
-        const table = tables.find(t => t.name === tableName);
+        const table = allTables.find(t => t.name === tableName);
         if (table) {
           md += `    ${table.name} {\n`;
           for (const field of table.fields) {
             const typeName = cleanMermaidType(field.type.type_name);
             const pkAttr = field.pk ? ' PK' : '';
-            const fkAttr = isForeignKey(table.name, field.name) ? ' FK' : '';
+            const fkAttr = isForeignKey(table.schemaName, table.name, field.name) ? ' FK' : '';
             md += `        ${typeName} ${field.name}${pkAttr}${fkAttr}\n`;
           }
           md += '    }\n\n';
         }
       }
 
-      // Render relationships inside this group
       for (const ref of refs) {
         const ep1 = ref.endpoints[0];
         const ep2 = ref.endpoints[1];
@@ -226,52 +346,125 @@ export function compileDbmlToMarkdown(database, entrypointName, activeAbsPath) {
     }
   }
 
-  // 3. Data Dictionary
-  md += '## 3. Data Dictionary\n\n';
+  // --- Isolated Table ER Diagram ---
+  if (!isExport && activeNodePath && activeNodePath.startsWith('table-') && tables.length === 1) {
+    const tableMermaid = compileDbmlToMermaid(database, activeNodePath, groupingMode);
+    if (tableMermaid) {
+      md += '```mermaid\n' + tableMermaid + '\n```\n\n---\n\n';
+    }
+  }
+
+  // --- Data Dictionary ---
+  md += '## Data Dictionary\n\n';
   for (const table of tables) {
-    md += `<div class="dbdocs-table-container" data-table="${table.name}">\n\n`;
-    md += `### ${table.name}\n`;
+    const sName = table.schemaName || 'public';
+    const schemaColor = getSchemaColor(sName);
+    const groupName = getTableGroup(table.name);
+    const tableRefs = getTableRefs(sName, table.name);
+
+    md += `<div class="dbdocs-table-container" id="table-${sName}-${table.name}" data-table="${table.name}">\n\n`;
+
+    // Structured table header
+    md += `<div class="dbdocs-table-header">\n`;
+    md += `  <div class="dbdocs-table-title-row" style="display: flex; justify-content: space-between; align-items: flex-start;">\n`;
+    md += `    <div class="dbdocs-table-title">\n`;
+    md += `      <span class="dbdocs-table-schema-dot" style="background: ${schemaColor}"></span>\n`;
+    md += `      <h3>${sName}.${table.name}</h3>\n`;
+    md += `    </div>\n`;
+    md += `    <button class="copy-btn" data-copy-text="${table.name}">Copy name</button>\n`;
+    md += `  </div>\n`;
+    // Metadata row
+    const metaItems = [];
+    if (groupName) {
+      metaItems.push(`<span class="dbdocs-meta-item"><span class="dbdocs-meta-label">Group</span> <span class="dbdocs-meta-value">${groupName}</span></span>`);
+    }
+    metaItems.push(`<span class="dbdocs-meta-item"><span class="dbdocs-meta-label">Fields</span> <span class="dbdocs-meta-value">${table.fields.length}</span></span>`);
+    if (tableRefs.length > 0) {
+      metaItems.push(`<span class="dbdocs-meta-item"><span class="dbdocs-meta-label">References</span> <span class="dbdocs-meta-value">${tableRefs.length}</span></span>`);
+    }
+    md += `  <div class="dbdocs-table-meta">${metaItems.join('')}</div>\n`;
+    md += `</div>\n\n`;
+
+    // Table note (rendered as markdown)
     if (table.note) {
-      md += `<div class="dbdocs-table-note">${table.note}</div>\n\n`;
+      md += `<div class="dbdocs-table-note">\n\n${table.note}\n\n</div>\n\n`;
     }
 
-    // Columns
-    md += '#### Columns\n\n';
-    const colHeaders = ['Name', 'Type', 'Key', 'Attributes', 'Note'];
-    const colRows = [];
+    // === Columns (restructured: Name, Type, Settings, References, Notes) ===
+    md += `<details class="table-section columns-section" open>\n`;
+    md += `  <summary>Fields <span class="section-count">(${table.fields.length})</span></summary>\n\n`;
+    md += `<div class="dbdocs-column-list">\n`;
+    md += `  <div class="dbdocs-column-header-row">\n`;
+    md += `    <div>Name</div><div>Type</div><div>Settings</div><div>References</div>\n`;
+    md += `  </div>\n`;
     for (const field of table.fields) {
-      const isPk = field.pk;
-      const isFk = isForeignKey(table.name, field.name);
+      const fkInfo = getForeignKeyRef(sName, table.name, field.name);
       
-      const keyBadges = [];
-      if (isPk) keyBadges.push('<span class="dbdocs-badge dbdocs-badge-pk">PK</span>');
-      if (isFk) keyBadges.push('<span class="dbdocs-badge dbdocs-badge-fk">FK</span>');
-      const keyVal = keyBadges.join(' ');
+      const nameHtml = `<span class="col-icon-name"><svg class="col-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><line x1="5" y1="6" x2="11" y2="6"/><line x1="5" y1="10" x2="9" y2="10"/></svg><span class="col-name">${field.name}</span></span>`;
 
-      const attrs = [];
-      if (field.not_null) attrs.push('<span class="dbdocs-badge dbdocs-badge-notnull">not null</span>');
-      if (field.unique) attrs.push('<span class="dbdocs-badge dbdocs-badge-unique">unique</span>');
-      if (field.increment) attrs.push('<span class="dbdocs-badge dbdocs-badge-increment">increment</span>');
-      if (field.dbdefault) {
-        attrs.push(`<span class="dbdocs-badge dbdocs-badge-default">default: <code>${field.dbdefault.value}</code></span>`);
+      const isEnum = enumNames.has(field.type.type_name);
+      const typeHtml = isEnum
+        ? `<span class="col-type">${field.type.type_name}</span> <span class="dbdocs-badge dbdocs-badge-enum">E</span>`
+        : `<span class="col-type">${field.type.type_name}</span>`;
+
+      const settings = [];
+      if (field.pk) settings.push('<span class="dbdocs-badge dbdocs-badge-pk">PK</span>');
+      if (field.not_null) settings.push('<span class="dbdocs-badge dbdocs-badge-notnull">not null</span>');
+      if (field.unique) settings.push('<span class="dbdocs-badge dbdocs-badge-unique">unique</span>');
+      if (field.increment) settings.push('<span class="dbdocs-badge dbdocs-badge-increment">increment</span>');
+      const settingsStr = settings.length > 0 ? `<div class="col-settings">${settings.join(' ')}</div>` : '';
+
+      let refHtml = '';
+      if (fkInfo) {
+        const targetId = `table-${fkInfo.targetSchema}-${fkInfo.targetTable}`;
+        refHtml = `<a href="#${targetId}" class="fk-link"><span class="fk-arrow">→</span> ${fkInfo.targetTable}.${fkInfo.targetColumn}</a>`;
       }
-      const attrStr = attrs.join(' ');
+      const incomingRefs = refs.filter(ref => {
+        const targetEp = ref.endpoints.find(ep => 
+          (ep.schemaName || 'public') === sName && ep.tableName === table.name && 
+          ep.fieldNames.includes(field.name) && ep.relation === '1'
+        );
+        return !!targetEp;
+      });
+      if (incomingRefs.length > 0) {
+        const incoming = incomingRefs.map(ref => {
+          const sourceEp = ref.endpoints.find(ep => ep.relation === '*');
+          if (!sourceEp) return '';
+          const sourceId = `table-${sourceEp.schemaName || 'public'}-${sourceEp.tableName}`;
+          return `<a href="#${sourceId}" class="fk-link fk-link-incoming"><span class="fk-arrow">←</span> ${sourceEp.tableName}.${sourceEp.fieldNames[0]}</a>`;
+        }).filter(Boolean);
+        if (refHtml) refHtml += '<br>';
+        refHtml += incoming.join('<br>');
+      }
+      const finalRefHtml = refHtml ? `<div class="col-refs">${refHtml}</div>` : '';
 
-      colRows.push([
-        `<code>${field.name}</code>`,
-        `<code>${field.type.type_name}</code>`,
-        keyVal,
-        attrStr,
-        field.note || ''
-      ]);
+      let notesParts = [];
+      if (field.dbdefault) {
+        notesParts.push(`<span class="dbdocs-badge dbdocs-badge-default">default: <code>${field.dbdefault.value}</code></span>`);
+      }
+      if (field.note) {
+        notesParts.push(`<span class="field-note-text">${field.note}</span>`);
+      }
+      const notesStr = notesParts.join(' ');
+
+      md += `  <div class="dbdocs-column-row">\n`;
+      md += `    <div>${nameHtml}</div>\n`;
+      md += `    <div>${typeHtml}</div>\n`;
+      md += `    <div>${settingsStr}</div>\n`;
+      md += `    <div>${finalRefHtml}</div>\n`;
+      if (notesStr) {
+        md += `    <div class="dbdocs-column-note">${notesStr}</div>\n`;
+      }
+      md += `  </div>\n`;
     }
-    md += renderHtmlTable(colHeaders, colRows);
-    md += '\n';
+    md += `</div>\n`;
+    md += `\n</details>\n\n`;
 
-    // Indexes
+    // === Indexes ===
     const tableIndexes = table.indexes || [];
     if (tableIndexes.length > 0) {
-      md += '#### Indexes\n\n';
+      md += `<details class="table-section indexes-section" open>\n`;
+      md += `  <summary>Indexes <span class="section-count">(${tableIndexes.length})</span></summary>\n\n`;
       const idxHeaders = ['Name', 'Columns', 'Unique', 'Details'];
       const idxRows = [];
       for (const idx of tableIndexes) {
@@ -285,51 +478,28 @@ export function compileDbmlToMarkdown(database, entrypointName, activeAbsPath) {
         ]);
       }
       md += renderHtmlTable(idxHeaders, idxRows);
-      md += '\n';
-    }
-
-    // Relationships
-    const tableRefs = refs.filter(ref => ref.endpoints.some(ep => ep.tableName === table.name));
-    if (tableRefs.length > 0) {
-      md += '#### Relationships\n\n';
-      const relHeaders = ['Source Column', 'Target', 'Relationship', 'Actions / Details'];
-      const relRows = [];
-      for (const ref of tableRefs) {
-        const sourceEp = ref.endpoints.find(ep => ep.tableName === table.name);
-        const targetEp = ref.endpoints.find(ep => ep.tableName !== table.name) || ref.endpoints[0];
-        
-        let relType = 'one-to-many';
-        if (sourceEp.relation === '*' && targetEp.relation === '1') relType = 'many-to-one';
-        if (sourceEp.relation === '1' && targetEp.relation === '1') relType = 'one-to-one';
-        if (sourceEp.relation === '*' && targetEp.relation === '*') relType = 'many-to-many';
-
-        const actions = [];
-        if (ref.onDelete) actions.push(`on delete: ${ref.onDelete}`);
-        if (ref.onUpdate) actions.push(`on update: ${ref.onUpdate}`);
-        const actionStr = actions.join(', ') || 'no action';
-
-        relRows.push([
-          `<code>${sourceEp.fieldNames.join(',')}</code>`,
-          `<code>${targetEp.tableName}.${targetEp.fieldNames.join(',')}</code>`,
-          `<span class="dbdocs-badge dbdocs-badge-default">${relType}</span>`,
-          `<code>${actionStr}</code>`
-        ]);
-      }
-      md += renderHtmlTable(relHeaders, relRows);
-      md += '\n';
+      md += `\n</details>\n\n`;
     }
 
     md += '</div>\n\n';
   }
 
-  // 4. Enums
+  // --- Enums ---
   if (enums.length > 0) {
-    md += '---\n\n## 4. Enums\n\n';
+    md += '---\n\n## Enums\n\n';
     for (const en of enums) {
-      md += `<div class="dbdocs-table-container" data-enum="${en.name}">\n\n`;
-      md += `### ${en.name}\n`;
+      const eSchema = en.schemaName || 'public';
+      const schemaColor = getSchemaColor(eSchema);
+      md += `<div class="dbdocs-table-container" id="enum-${eSchema}-${en.name}" data-enum="${en.name}">\n\n`;
+      md += `<div class="dbdocs-table-header">\n`;
+      md += `  <div class="dbdocs-table-title">\n`;
+      md += `    <span class="dbdocs-table-schema-dot" style="background: ${schemaColor}"></span>\n`;
+      md += `    <h3>${eSchema}.${en.name}</h3>\n`;
+      md += `    <span class="dbdocs-badge dbdocs-badge-enum" style="margin-left: 8px">ENUM</span>\n`;
+      md += `  </div>\n`;
+      md += `</div>\n\n`;
       if (en.note) {
-        md += `<div class="dbdocs-table-note">${en.note}</div>\n\n`;
+        md += `<div class="dbdocs-table-note">\n\n${en.note}\n\n</div>\n\n`;
       }
       const enumHeaders = ['Value', 'Note'];
       const enumRows = [];
@@ -348,3 +518,132 @@ export function compileDbmlToMarkdown(database, entrypointName, activeAbsPath) {
 
   return md;
 }
+
+/**
+ * Compiles a database AST to a Mermaid ER diagram code string representing the entire schema.
+ * @param {Object} database The parsed Database object
+ * @returns {string} Mermaid ER diagram code
+ */
+export function compileDbmlToMermaid(database, activeNodePath = null, groupingMode = 'schema') {
+  if (!database) return '';
+  const exported = database.export();
+  
+  const allTables = [];
+  const refs = [];
+  const allTableGroups = [];
+
+  for (const schema of exported.schemas || []) {
+    const schemaName = schema.name || 'public';
+    if (schema.tables) {
+      schema.tables.forEach(t => {
+        t.schemaName = schemaName;
+        allTables.push(t);
+      });
+    }
+    if (schema.tableGroups) {
+      schema.tableGroups.forEach(tg => {
+        tg.schemaName = schemaName;
+        allTableGroups.push(tg);
+      });
+    }
+    if (schema.refs) {
+      schema.refs.forEach(r => {
+        r.schemaName = schemaName;
+        refs.push(r);
+      });
+    }
+  }
+
+  let tables = [];
+  if (!activeNodePath) {
+    tables = allTables;
+  } else if (activeNodePath.startsWith('schema-')) {
+    const sName = activeNodePath.replace('schema-', '');
+    tables = allTables.filter(t => t.schemaName === sName);
+  } else if (activeNodePath.startsWith('tablegroup-')) {
+    const parts = activeNodePath.split('-');
+    const sName = parts[1];
+    const gName = parts.slice(2).join('-');
+    const group = allTableGroups.find(g => g.name === gName && g.schemaName === sName);
+    if (group) {
+      const gTableNames = (group.tables || []).map(t => t.tableName || t.name);
+      tables = allTables.filter(t => gTableNames.includes(t.name));
+    }
+  } else if (activeNodePath.startsWith('table-')) {
+    const parts = activeNodePath.split('-');
+    const sName = parts[1];
+    const tName = parts.slice(2).join('-');
+    
+    // For single table, we include its neighbors in the ERD
+    const targetTable = allTables.find(t => t.name === tName && t.schemaName === sName);
+    if (targetTable) {
+      const tableNamesToInclude = new Set([tName]);
+      for (const ref of refs) {
+        const ep1 = ref.endpoints[0];
+        const ep2 = ref.endpoints[1];
+        if (ep1.tableName === tName && (ep1.schemaName || 'public') === sName) {
+          tableNamesToInclude.add(ep2.tableName);
+        } else if (ep2.tableName === tName && (ep2.schemaName || 'public') === sName) {
+          tableNamesToInclude.add(ep1.tableName);
+        }
+      }
+      tables = allTables.filter(t => tableNamesToInclude.has(t.name));
+    }
+  } else if (activeNodePath.startsWith('enum-')) {
+    tables = [];
+  }
+
+  // Local helper to check if a column is a foreign key
+  const isForeignKey = (schemaName, tableName, columnName) => {
+    return refs.some(ref => 
+      ref.endpoints.some(ep => 
+        (ep.schemaName || 'public') === schemaName &&
+        ep.tableName === tableName && 
+        ep.fieldNames.includes(columnName) && 
+        ep.relation === '*'
+      )
+    );
+  };
+
+  let mermaidCode = '';
+  const hasHeaderColors = tables.some(t => t.headerColor);
+  if (hasHeaderColors) {
+    mermaidCode += '---\nconfig:\n  themeCSS: |\n';
+    for (const table of tables) {
+      if (table.headerColor) {
+        mermaidCode += `    [id|="entity-${table.name}"] rect:first-of-type {\n      fill: ${table.headerColor} !important;\n    }\n`;
+      }
+    }
+    mermaidCode += '---\nerDiagram\n';
+  } else {
+    mermaidCode += 'erDiagram\n';
+  }
+
+  // 1. Table columns
+  for (const table of tables) {
+    mermaidCode += `    ${table.name} {\n`;
+    for (const field of table.fields) {
+      const typeName = cleanMermaidType(field.type.type_name);
+      const pkAttr = field.pk ? ' PK' : '';
+      const fkAttr = isForeignKey(table.schemaName, table.name, field.name) ? ' FK' : '';
+      mermaidCode += `        ${typeName} ${field.name}${pkAttr}${fkAttr}\n`;
+    }
+    mermaidCode += '    }\n\n';
+  }
+
+  // 2. Table relationships
+  const tableNames = tables.map(t => t.name);
+  for (const ref of refs) {
+    const ep1 = ref.endpoints[0];
+    const ep2 = ref.endpoints[1];
+    
+    // Only include refs where BOTH endpoints are in the current `tables` list
+    if (tableNames.includes(ep1.tableName) && tableNames.includes(ep2.tableName)) {
+      const relSym = getMermaidRelation(ep1.relation, ep2.relation);
+      mermaidCode += `    ${ep1.tableName} ${relSym} ${ep2.tableName} : ""\n`;
+    }
+  }
+
+  return mermaidCode;
+}
+

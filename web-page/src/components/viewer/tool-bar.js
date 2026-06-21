@@ -4,7 +4,9 @@ export class ToolBar extends LitElement {
   static properties = {
     menuOpen: { type: Boolean },
     contentType: { type: String }, // 'mermaid', 'plantuml', 'markdown', 'swagger', 'dbml'
-    filename: { type: String }
+    filename: { type: String },
+    viewMode: { type: String }, // 'document' | 'diagram' (for DBML)
+    breadcrumb: { type: Object }
   };
 
   static styles = css`
@@ -30,6 +32,42 @@ export class ToolBar extends LitElement {
       overflow: hidden;
       text-overflow: ellipsis;
       flex: 1;
+    }
+
+    .dbml-breadcrumb {
+      display: flex;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      gap: 6px;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .dbml-breadcrumb-item {
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: color 0.15s;
+    }
+    
+    .dbml-breadcrumb-item:hover {
+      color: var(--text-primary);
+      text-decoration: underline;
+    }
+
+    .dbml-breadcrumb-item.active {
+      color: var(--text-primary);
+      font-weight: 600;
+      cursor: default;
+      text-decoration: none;
+    }
+
+    .dbml-breadcrumb-sep {
+      color: var(--border-color);
+      user-select: none;
     }
 
     .badge {
@@ -125,6 +163,41 @@ export class ToolBar extends LitElement {
       flex-shrink: 0;
     }
 
+    .view-switcher {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--bg-tertiary);
+      border-radius: 999px;
+      padding: 2px;
+    }
+
+    .view-switcher-btn {
+      background: none;
+      border: none;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      cursor: pointer;
+      line-height: 1.6;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .view-switcher-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .view-switcher-btn.active {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+    }
+
     @keyframes os-slide-down {
       from { opacity: 0; transform: translateY(-6px); }
       to { opacity: 1; transform: none; }
@@ -142,6 +215,7 @@ export class ToolBar extends LitElement {
     this.menuOpen = false;
     this.contentType = ''; // default
     this.filename = 'Preview';
+    this.viewMode = 'document'; // 'document' | 'diagram' (for DBML)
   }
 
   connectedCallback() {
@@ -162,11 +236,15 @@ export class ToolBar extends LitElement {
   willUpdate(changedProperties) {
   }
 
+  setViewMode(mode) {
+    this.viewMode = mode;
+    this.dispatchEvent(new CustomEvent('view-mode-change', { detail: { mode } }));
+  }
+
   getExportOptions() {
-    const isDiagram = this.contentType === 'mermaid' || this.contentType === 'plantuml';
-    const isChildDbml = this.contentType === 'dbml' && !(this.filename || '').toLowerCase().endsWith('index.dbml');
+    const isDiagram = this.contentType === 'mermaid' || this.contentType === 'plantuml' || (this.contentType === 'dbml' && this.viewMode === 'diagram');
     
-    if (isDiagram || isChildDbml) {
+    if (isDiagram) {
       return [
         { label: 'Export SVG', event: 'export-svg', icon: this.getSvgIcon() },
         { label: 'Export PNG', event: 'export-png', icon: this.getPngIcon() },
@@ -211,8 +289,49 @@ export class ToolBar extends LitElement {
 
     const options = this.getExportOptions();
 
+    let titleContent;
+    if (this.contentType === 'dbml' && this.breadcrumb) {
+      titleContent = html`
+        <div class="dbml-breadcrumb">
+          <span class="dbml-breadcrumb-item" @click=${() => this.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { target: 'root' } }))}>
+            ${this.breadcrumb.project || 'Project'}
+          </span>
+          ${this.breadcrumb.group ? html`
+            <span class="dbml-breadcrumb-sep">/</span>
+            <span class="dbml-breadcrumb-item ${!this.breadcrumb.entity ? 'active' : ''}" @click=${() => this.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { target: 'group', path: this.breadcrumb.groupPath } }))}>
+              ${this.breadcrumb.group}
+            </span>
+          ` : ''}
+          ${this.breadcrumb.entity ? html`
+            <span class="dbml-breadcrumb-sep">/</span>
+            <span class="dbml-breadcrumb-item active">
+              ${this.breadcrumb.entity}
+            </span>
+          ` : ''}
+        </div>
+      `;
+    } else {
+      titleContent = html`<span class="filename">${this.filename}</span>`;
+    }
+
     return html`
-      <span class="filename">${this.filename}</span>
+      ${titleContent}
+
+      ${this.contentType === 'dbml' ? html`
+        <div class="view-switcher" role="group" aria-label="View mode">
+          <button
+            class="view-switcher-btn ${this.viewMode !== 'diagram' ? 'active' : ''}"
+            @click=${() => this.setViewMode('document')}
+            title="Document view"
+          >Doc</button>
+          <button
+            class="view-switcher-btn ${this.viewMode === 'diagram' ? 'active' : ''}"
+            @click=${() => this.setViewMode('diagram')}
+            title="Diagram view"
+          >ERD</button>
+        </div>
+      ` : ''}
+
       <span class="badge">${this.contentType}</span>
       
       <div class="os-export-container">

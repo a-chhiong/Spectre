@@ -13,7 +13,9 @@ export class CodeViewer extends LitElement {
   static properties = {
     activeFile: { type: Object },
     files: { type: Array },
-    theme: { type: String }
+    theme: { type: String },
+    viewMode: { type: String },
+    _dbmlBreadcrumb: { type: Object, state: true }
   };
 
   // Override to render in Light DOM so global CSS (markdown.css, dbdocs.css, Swagger UI) applies directly
@@ -27,6 +29,8 @@ export class CodeViewer extends LitElement {
     this.files = [];
     this.theme = 'light';
     this.currentContentType = ''; // 'markdown', 'plantuml', 'mermaid', 'swagger', 'dbml'
+    this.viewMode = 'document'; // default
+    this._dbmlBreadcrumb = null;
 
     // Instantiate the slim coordinator controller
     this.viewerController = new ViewerController(this);
@@ -93,9 +97,12 @@ export class CodeViewer extends LitElement {
     if (ct === 'dbml') {
       return html`
         <dbml-viewer
+          id="active-dbml-viewer"
           .activeFile=${this.activeFile}
           .files=${this.files}
           .theme=${this.theme}
+          .viewMode=${this.viewMode}
+          @breadcrumb-change=${(e) => { this._dbmlBreadcrumb = e.detail; }}
         ></dbml-viewer>
       `;
     }
@@ -112,6 +119,15 @@ export class CodeViewer extends LitElement {
           <tool-bar
             .filename=${filename}
             .contentType=${this.currentContentType}
+            .viewMode=${this.viewMode}
+            .breadcrumb=${this._dbmlBreadcrumb}
+            @breadcrumb-navigate=${(e) => {
+              const viewer = this.renderRoot.querySelector('#active-dbml-viewer');
+              if (viewer && viewer.handleBreadcrumbNavigation) {
+                viewer.handleBreadcrumbNavigation(e.detail);
+              }
+            }}
+            @view-mode-change=${(e) => { this.viewMode = e.detail.mode; }}
             @export-html=${this.handleExportHTML}
             @export-pdf=${this.handleExportPDF}
             @export-svg=${this.handleExportSVG}

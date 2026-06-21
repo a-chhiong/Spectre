@@ -2,16 +2,24 @@ import { LitElement, html } from 'lit';
 import { Parser } from '@dbml/core';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
-import { compileDbmlToMarkdown } from '../../utils/dbml-converter.js';
+import { compileDbmlToMarkdown, compileDbmlToMermaid } from '../../utils/dbml-converter.js';
 import { renderDiagrams } from '../../utils/diagram-processor.js';
 import './dbml-sidebar.js';
+import './diagram-viewer.js';
 import './dbml-viewer.css';
+
+// Incrementing ID for unique scroll spy observers
+let _scrollSpyCounter = 0;
 
 export class DbmlViewer extends LitElement {
   static properties = {
     activeFile: { type: Object },
     files: { type: Array },
-    theme: { type: String }
+    theme: { type: String },
+    viewMode: { type: String }, // 'document' | 'diagram' | 'raw'
+    activeEntityPath: { type: String },
+    groupingMode: { type: String },
+    database: { type: Object }
   };
 
   createRenderRoot() {
@@ -24,22 +32,79 @@ export class DbmlViewer extends LitElement {
     this.files = [];
     this.theme = 'light';
     this.database = null;
+    this.viewMode = 'document';
+    this._rawContent = null;
+    this.activeEntityPath = null;
+    this.groupingMode = 'schema';
   }
 
   updated(changedProperties) {
-    if (changedProperties.has('activeFile') || changedProperties.has('files') || changedProperties.has('theme')) {
+    // Re-render when file, theme, or viewMode changes to document
+    if (
+      changedProperties.has('activeFile') ||
+      changedProperties.has('files') ||
+      changedProperties.has('theme') ||
+      (changedProperties.has('viewMode') && this.viewMode === 'document')
+    ) {
       this.renderContent();
     }
   }
 
-  scrollToEntity(e) {
-    const path = e.detail.path;
-    const el = this.renderRoot.querySelector(`#${path}`) || 
-               this.renderRoot.querySelector(`[data-table="${path.replace('table-public-', '')}"]`) || 
-               this.renderRoot.querySelector(`[data-enum="${path.replace('enum-public-', '')}"]`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Exposed method for toolbar to call when view mode changes
+  setViewMode(mode) {
+    if (['document', 'diagram'].includes(mode)) {
+      this.viewMode = mode;
+      this.requestUpdate();
     }
+  }
+
+  handleSidebarNodeClick(e) {
+    const { path } = e.detail;
+    this.activeEntityPath = path;
+    this._emitBreadcrumb();
+    this.renderContent();
+  }
+
+  handleGroupingModeChange(e) {
+    this.groupingMode = e.detail.mode;
+    this.activeEntityPath = null;
+    this._emitBreadcrumb();
+    this.renderContent();
+  }
+
+  handleBreadcrumbNavigation(detail) {
+    if (detail.target === 'root') {
+      this.activeEntityPath = null;
+    } else if (detail.target === 'group') {
+      this.activeEntityPath = detail.path;
+    }
+    this._emitBreadcrumb();
+    this.renderContent();
+  }
+
+  _emitBreadcrumb() {
+    const projectName = this.database && this.database.project ? this.database.project.name : 'Project';
+    const b = { project: projectName, group: '', entity: '', groupPath: '' };
+
+    if (this.activeEntityPath) {
+      const parts = this.activeEntityPath.split('-');
+      if (this.activeEntityPath.startsWith('schema-')) {
+        b.group = parts.slice(1).join('-');
+        b.groupPath = this.activeEntityPath;
+      } else if (this.activeEntityPath.startsWith('tablegroup-')) {
+        b.group = parts.slice(1).join('-');
+        b.groupPath = this.activeEntityPath;
+      } else if (this.activeEntityPath.startsWith('table-')) {
+        b.group = parts[1];
+        b.entity = parts.slice(2).join('-');
+        b.groupPath = this.groupingMode === 'group' ? `tablegroup-${b.group}` : `schema-${b.group}`;
+      } else if (this.activeEntityPath.startsWith('enum-')) {
+        b.group = parts[1];
+        b.entity = parts.slice(2).join('-');
+        b.groupPath = this.groupingMode === 'group' ? `tablegroup-${b.group}` : `schema-${b.group}`;
+      }
+    }
+    this.dispatchEvent(new CustomEvent('breadcrumb-change', { detail: b }));
   }
 
   async renderContent() {
@@ -70,15 +135,19 @@ export class DbmlViewer extends LitElement {
 
       // Look for parent index.dbml in workspace
       const parentFile = this.files.find(f => f.type === 'file' && f.path.toLowerCase().endsWith('index.dbml'));
+      const hasIndexFile = !!parentFile;
       let compilePath = activeAbsPath;
       if (parentFile) {
         compilePath = parentFile.path.startsWith('/') ? parentFile.path : '/' + parentFile.path;
       }
 
       this.database = parser.parseDbmlProject(compilePath);
-      this.requestUpdate(); // Trigger sidebar re-render
+      this._emitBreadcrumb(); // Make sure breadcrumb reflects initial/updated project state
       
-      const markdownContent = compileDbmlToMarkdown(this.database, filename, activeAbsPath);
+      const markdownContent = compileDbmlToMarkdown(this.database, filename, this.activeEntityPath, { hasIndexFile, groupingMode: this.groupingMode });
+      
+      // Store raw DBML content for Raw view mode
+      this._rawContent = markdownContent;
       
       const htmlContent = marked.parse(markdownContent || '');
       mainContainer.innerHTML = `<div class="markdown-preview dbml-preview">${htmlContent}</div>`;
@@ -132,15 +201,138 @@ export class DbmlViewer extends LitElement {
     }
   }
 
+
+
+  // Copy to Clipboard functionality
+  async copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.showToast('Copied to clipboard!');
+    } catch (err) {
+      console.error('Copy failed:', err);
+    }
+  }
+
+  showToast(message, type = 'success') {
+    // Remove existing toasts
+    document.querySelectorAll('.toast').forEach(toast => toast.remove());
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  // Handle copy and link clicks from rendered content
+  _handleContentClick(e) {
+    // 1. Handle copy
+    const btn = e.target.closest('.copy-btn');
+    if (btn && btn.dataset.copyText) {
+      const text = btn.dataset.copyText;
+      const originalInner = btn.innerHTML;
+      btn.classList.add('copied');
+      btn.innerHTML = '✓ Copied';
+      
+      this.copyToClipboard(text);
+      
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = originalInner;
+      }, 2000);
+      return;
+    }
+
+    // 2. Handle internal links to tables
+    const link = e.target.closest('a');
+    if (link && link.getAttribute('href') && link.getAttribute('href').startsWith('#table-')) {
+      e.preventDefault();
+      const targetPath = link.getAttribute('href').substring(1); // removes '#'
+      this.activeEntityPath = targetPath;
+      this.requestUpdate();
+      
+      // Also notify sidebar so it can highlight if needed
+      const sidebar = this.renderRoot?.querySelector('dbml-sidebar') || this.querySelector('dbml-sidebar');
+      if (sidebar) {
+        sidebar.activeNodePath = targetPath;
+        sidebar.requestUpdate();
+      }
+      
+      this.renderContent();
+    }
+  }
+
+  // Get view mode specific class for styling
+  _getViewModeClass() {
+    return `view-mode-${this.viewMode || 'document'}`;
+  }
+
+  async getExportHtml() {
+    if (this.viewMode === 'diagram') {
+      const diagramViewer = this.renderRoot?.querySelector('diagram-viewer') || this.querySelector('diagram-viewer');
+      if (diagramViewer) {
+        const canvas = diagramViewer.renderRoot?.querySelector('.diagram-viewer-canvas') || diagramViewer.querySelector('.diagram-viewer-canvas');
+        return canvas ? canvas.innerHTML : '';
+      }
+      return '';
+    } else {
+      if (!this.database) return '';
+      const filename = this.activeFile ? this.activeFile.path.split('/').pop() : 'schema.dbml';
+      const md = compileDbmlToMarkdown(this.database, filename, null, {
+        groupingMode: this.groupingMode,
+        isExport: true
+      });
+      
+      const tempDiv = document.createElement('div');
+      tempDiv.className = 'markdown-preview dbml-preview';
+      const htmlContent = marked.parse(md || '');
+      tempDiv.innerHTML = htmlContent;
+      
+      tempDiv.querySelectorAll('pre code').forEach((block) => {
+        if (!block.classList.contains('language-mermaid')) {
+          hljs.highlightElement(block);
+        }
+      });
+      
+      const isDark = this.theme === 'dark';
+      await renderDiagrams(tempDiv, isDark);
+      
+      return tempDiv.outerHTML;
+    }
+  }
+
   render() {
+    // Apply view mode class to main content
+    const mainContentClass = this.viewMode === 'diagram' ? 'dbml-main-content diagram-view' : 'dbml-main-content';
+    
+    // Project Name from dbml
+    const projectName = this.database && this.database.project ? this.database.project.name : 'Project';
+
     return html`
       <div class="dbml-viewer-layout">
-        <dbml-sidebar 
+        <dbml-sidebar
           .database=${this.database}
-          @node-click=${this.scrollToEntity}
+          .activeNodePath=${this.activeEntityPath}
+          .groupingMode=${this.groupingMode}
+          @node-click=${this.handleSidebarNodeClick}
+          @grouping-mode-change=${this.handleGroupingModeChange}
         ></dbml-sidebar>
         
-        <div class="dbml-main-content"></div>
+        ${this.viewMode === 'diagram'
+          ? html`
+              <diagram-viewer
+                class="dbml-diagram-viewer"
+                .code=${this.database ? compileDbmlToMermaid(this.database, this.activeEntityPath, this.groupingMode) : ''}
+                .type=${'mermaid'}
+                .theme=${this.theme}
+              ></diagram-viewer>
+            `
+          : html`
+              <div class="dbml-viewer-main">
+                <div class="${mainContentClass}" id="main-content-dbml" @click=${this._handleContentClick}></div>
+              </div>
+            `
+        }
       </div>
     `;
   }

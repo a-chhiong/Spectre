@@ -119,7 +119,7 @@ export class ViewerController {
     );
   }
 
-  handleExportHTML() {
+  async handleExportHTML() {
     const path = this.host.activeFile?.path?.toLowerCase() || '';
     const isMarkdown = path.endsWith('.md') || path.endsWith('.markdown');
     const isPuml = path.endsWith('.puml') || path.endsWith('.plantuml') || path.endsWith('.pu');
@@ -130,9 +130,12 @@ export class ViewerController {
     let renderedHtml = '';
     if (container) {
       const viewer = container.querySelector('diagram-viewer');
+      const dbmlViewer = container.querySelector('#active-dbml-viewer') || container.querySelector('dbml-viewer');
       if (viewer) {
         const canvas = viewer.renderRoot?.querySelector('.diagram-viewer-canvas') || viewer.querySelector('.diagram-viewer-canvas');
         renderedHtml = canvas ? canvas.innerHTML : container.innerHTML;
+      } else if (isDbml && dbmlViewer && typeof dbmlViewer.getExportHtml === 'function') {
+        renderedHtml = await dbmlViewer.getExportHtml();
       } else {
         renderedHtml = container.innerHTML;
       }

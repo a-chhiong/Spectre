@@ -1,0 +1,113 @@
+{
+  "theme": "light",
+  "gridEnabling": false,
+  "isUnsavedMarkdown": false,
+  "auth": {
+    "error": null,
+    "user": null,
+    "credentialChanged": false
+  },
+  "chargebee": {
+    "cbInstance": null
+  },
+  "featureFlag": {
+    "orgName": null,
+    "user": {
+      "id": null,
+      "features": []
+    }
+  },
+  "org": {
+    "org": {},
+    "orgPermission": {},
+    "associatedOrgNames": [],
+    "status": "fetching",
+    "error": null
+  },
+  "project": {
+    "project": {},
+    "projectPermission": {},
+    "model": {},
+    "rawDatabase": {},
+    "diagramViews": [],
+    "diagramViewVizData": [],
+    "modelUpdatedAt": 0,
+    "noteOffsets": {
+      "project": {},
+      "tables": {},
+      "tableGroups": {},
+      "fields": {}
+    },
+    "selectedNode": {
+      "type": "",
+      "id": null
+    },
+    "selectedView": "",
+    "selectedField": {
+      "id": null
+    },
+    "status": "fetching",
+    "error": null
+  },
+  "schemaChangelog": {
+    "focusedChangeDetail": null,
+    "activitySidebar": {
+      "isOpen": false,
+      "level": "",
+      "schemaName": "",
+      "tableName": "",
+      "tableGroupName": "",
+      "fieldName": "",
+      "indexName": "",
+      "tables": [],
+      "fieldNames": [],
+      "versionOrder": null,
+      "versionId": null
+    },
+    "fullChangelogActivities": [],
+    "fullChangelogFetchState": "not-started",
+    "shouldSyncSidebarNode": true,
+    "projectPagination": {
+      "startPage": 1,
+      "endPage": 1,
+      "pageSize": 10,
+      "pageCount": 1
+    },
+    "tablePagination": {
+      "nextItem": null,
+      "limit": 10,
+      "direction": "next",
+      "hasNext": true,
+      "hasPrev": false
+    },
+    "tableGroupPagination": {
+      "nextItem": null,
+      "limit": 10,
+      "direction": "next",
+      "hasNext": true,
+      "hasPrev": false
+    },
+    "rootLevelFetchPromise": null,
+    "rootLevelFetchKey": {},
+    "cacheSidebarNodeActivity": {}
+  },
+  "subscription": {
+    "currentOrgName": "",
+    "subscription": {},
+    "additionalSubscriptionInfo": {},
+    "fetchingPromise": null,
+    "isFetching": false,
+    "isFetched": false,
+    "currentOwnerOrgName": "",
+    "ownerFeatureRules": [],
+    "fetchingOwnerFeatureRulesPromise": null,
+    "isFetchingOwnerFeatureRules": false,
+    "isFetchedOwnerFeatureRules": false
+  },
+  "whiteLabel": {
+    "domainName": null,
+    "orgName": null,
+    "logoUrl": null,
+    "favIconUrl": null
+  }
+}
