@@ -1,5 +1,5 @@
 {
-  "name": "openstudio",
+  "name": "DocTheatre",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,17 +8,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/a-chhiong/OpenStudio.git"
+    "url": "git+https://github.com/a-chhiong/DocTheatre.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/a-chhiong/OpenStudio/issues"
+    "url": "https://github.com/a-chhiong/DocTheatre/issues"
   },
-  "homepage": "https://github.com/a-chhiong/OpenStudio#readme",
+  "homepage": "https://github.com/a-chhiong/DocTheatre#readme",
   "dependencies": {
     "puppeteer": "^25.1.0"
   }
 }
+

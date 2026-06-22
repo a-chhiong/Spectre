@@ -19,7 +19,7 @@ interface ExportMessage {
 
 export class PreviewPanel {
   public static current: PreviewPanel | undefined;
-  private static readonly viewType = 'openstudio.preview';
+  private static readonly viewType = 'doctheatre.preview';
 
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
@@ -48,7 +48,7 @@ export class PreviewPanel {
 
     const panel = vscode.window.createWebviewPanel(
       PreviewPanel.viewType,
-      'OpenStudio Preview',
+      'DocTheatre Preview',
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       {
         enableScripts: true,
@@ -65,7 +65,7 @@ export class PreviewPanel {
 
   public static triggerExport(format: ExportFormat): void {
     if (!PreviewPanel.current) {
-      vscode.window.showWarningMessage('OpenStudio: No preview panel is open.');
+      vscode.window.showWarningMessage('DocTheatre: No preview panel is open.');
       return;
     }
     PreviewPanel.current._panel.webview.postMessage({ type: 'trigger-export', format });
@@ -142,8 +142,8 @@ export class PreviewPanel {
     this._currentContentType = contentType;
 
     // Update VS Code context keys for menu visibility
-    vscode.commands.executeCommand('setContext', 'openstudio.previewActive', true);
-    vscode.commands.executeCommand('setContext', 'openstudio.contentType', contentType);
+    vscode.commands.executeCommand('setContext', 'doctheatre.previewActive', true);
+    vscode.commands.executeCommand('setContext', 'doctheatre.contentType', contentType);
 
     let content = doc.getText();
     if (contentType === 'markdown') {
@@ -183,7 +183,7 @@ export class PreviewPanel {
       }
 
       case 'error':
-        console.error('[OpenStudio webview error]', msg.message);
+        console.error('[DocTheatre webview error]', msg.message);
         break;
 
       // ── Export messages ───────────────────────────────────────────────────────
@@ -235,7 +235,7 @@ export class PreviewPanel {
     }
 
     await vscode.workspace.fs.writeFile(saveUri, buffer);
-    vscode.window.showInformationMessage(`OpenStudio: Saved to ${saveUri.fsPath}`);
+    vscode.window.showInformationMessage(`DocTheatre: Saved to ${saveUri.fsPath}`);
   }
 
   // ── HTML shell ───────────────────────────────────────────────────────────────
@@ -281,7 +281,7 @@ export class PreviewPanel {
              img-src ${webview.cspSource} data: blob: https://unpkg.com;
              font-src ${webview.cspSource} https://fonts.gstatic.com https://unpkg.com;
              connect-src blob:;">
-  <title>OpenStudio Preview</title>
+  <title>DocTheatre Preview</title>
   <link rel="stylesheet" href="${cssUri}">
   <script nonce="${nonce}">
     window.__ASSETS__ = {
@@ -303,7 +303,7 @@ export class PreviewPanel {
 
   public dispose(): void {
     PreviewPanel.current = undefined;
-    vscode.commands.executeCommand('setContext', 'openstudio.previewActive', false);
+    vscode.commands.executeCommand('setContext', 'doctheatre.previewActive', false);
     this._panel.dispose();
     this._disposables.forEach(d => d.dispose());
     this._disposables = [];
@@ -379,7 +379,7 @@ function preprocessOpenApiRefs(rawContent: string, basePath: string): string {
     return JSON.stringify(resolved);
   } catch (err: any) {
     // On any error return the raw text — the webview can surface the parse error
-    console.error('[OpenStudio] OpenAPI $ref preprocessing failed:', err.message);
+    console.error('[DocTheatre] OpenAPI $ref preprocessing failed:', err.message);
     return rawContent;
   }
 }
@@ -420,7 +420,7 @@ function resolveRefNode(node: unknown, baseDir: string, visited: Set<string>): u
       }
 
       if (!fs.existsSync(resolvedPath)) {
-        console.warn(`[OpenStudio] $ref file not found: ${resolvedPath}`);
+        console.warn(`[DocTheatre] $ref file not found: ${resolvedPath}`);
         return obj; // leave unresolved, Swagger UI will report the error
       }
 
@@ -458,7 +458,7 @@ function resolveRefNode(node: unknown, baseDir: string, visited: Set<string>): u
 
         return inlined;
       } catch (err: any) {
-        console.error(`[OpenStudio] Failed to inline $ref "${ref}": ${err.message}`);
+        console.error(`[DocTheatre] Failed to inline $ref "${ref}": ${err.message}`);
         return obj;
       }
     }

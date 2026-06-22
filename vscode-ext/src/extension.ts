@@ -7,32 +7,32 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // ── Open / toggle preview panel ─────────────────────────────────────────────
   context.subscriptions.push(
-    vscode.commands.registerCommand('openstudio.openPreview', () => {
+    vscode.commands.registerCommand('doctheatre.openPreview', () => {
       PreviewPanel.createOrShow(extensionUri);
     })
   );
 
   // ── Export commands ─────────────────────────────────────────────────────────
   context.subscriptions.push(
-    vscode.commands.registerCommand('openstudio.exportSVG', () => {
+    vscode.commands.registerCommand('doctheatre.exportSVG', () => {
       PreviewPanel.triggerExport('svg');
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('openstudio.exportPNG', () => {
+    vscode.commands.registerCommand('doctheatre.exportPNG', () => {
       PreviewPanel.triggerExport('png');
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('openstudio.exportHTML', () => {
+    vscode.commands.registerCommand('doctheatre.exportHTML', () => {
       PreviewPanel.triggerExport('html');
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('openstudio.exportPDF', () => {
+    vscode.commands.registerCommand('doctheatre.exportPDF', () => {
       PreviewPanel.triggerExport('pdf');
     })
   );

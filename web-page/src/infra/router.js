@@ -1,5 +1,5 @@
 /**
- * Dedicated Routing Service for OpenStudio
+ * Dedicated Routing Service for DocTheatre
  * Synchronizes URL hash state with ProjectManager state
  */
 export class RouterService {

@@ -143,7 +143,7 @@ export class MenuDropdown extends LitElement {
     const name = await this._requestDialog({
       title: 'New Project',
       message: 'Enter project name:',
-      defaultValue: 'My OpenStudio API',
+      defaultValue: 'My DocTheatre API',
       type: 'prompt'
     });
 

@@ -223,7 +223,7 @@ export function compileDbmlToMarkdown(database, entrypointName, activeNodePath, 
 
   // === Build Document ===
   const project = exported.project || database.shallowExport() || {};
-  const projName = project.name || 'OpenStudio Project';
+  const projName = project.name || 'DocTheatre Project';
   const dbType = project.databaseType || project.database_type || '';
   const projNote = project.note || '';
 

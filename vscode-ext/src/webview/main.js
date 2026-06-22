@@ -34,7 +34,7 @@ const root = document.getElementById('os-root');
 const toolbar = document.createElement('div');
 toolbar.className = 'os-toolbar';
 toolbar.innerHTML = `
-  <span class="filename" id="os-filename">OpenStudio</span>
+  <span class="filename" id="os-filename">DocTheatre</span>
   <span class="badge"   id="os-badge"></span>
   <span id="os-export-anchor"></span>
   <button class="os-toolbar-btn" id="os-theme-btn" title="Toggle light / dark theme">☀</button>

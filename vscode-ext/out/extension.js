@@ -2465,7 +2465,7 @@ var PreviewPanel = class _PreviewPanel {
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
   }
   static {
-    this.viewType = "openstudio.preview";
+    this.viewType = "doctheatre.preview";
   }
   // ── Factory ─────────────────────────────────────────────────────────────────
   static createOrShow(extensionUri) {
@@ -2477,7 +2477,7 @@ var PreviewPanel = class _PreviewPanel {
     const initialDocument = vscode.window.activeTextEditor?.document;
     const panel = vscode.window.createWebviewPanel(
       _PreviewPanel.viewType,
-      "OpenStudio Preview",
+      "DocTheatre Preview",
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       {
         enableScripts: true,
@@ -2492,7 +2492,7 @@ var PreviewPanel = class _PreviewPanel {
   }
   static triggerExport(format) {
     if (!_PreviewPanel.current) {
-      vscode.window.showWarningMessage("OpenStudio: No preview panel is open.");
+      vscode.window.showWarningMessage("DocTheatre: No preview panel is open.");
       return;
     }
     _PreviewPanel.current._panel.webview.postMessage({ type: "trigger-export", format });
@@ -2512,8 +2512,8 @@ var PreviewPanel = class _PreviewPanel {
       return;
     }
     this._currentContentType = contentType;
-    vscode.commands.executeCommand("setContext", "openstudio.previewActive", true);
-    vscode.commands.executeCommand("setContext", "openstudio.contentType", contentType);
+    vscode.commands.executeCommand("setContext", "doctheatre.previewActive", true);
+    vscode.commands.executeCommand("setContext", "doctheatre.contentType", contentType);
     let content = doc.getText();
     if (contentType === "markdown") {
       content = preprocessMarkdownImports(content, filePath);
@@ -2542,7 +2542,7 @@ var PreviewPanel = class _PreviewPanel {
         break;
       }
       case "error":
-        console.error("[OpenStudio webview error]", msg.message);
+        console.error("[DocTheatre webview error]", msg.message);
         break;
       case "export-svg":
         await this._saveExport(msg, "SVG files", ["svg"], msg.suggestedName ?? "diagram.svg");
@@ -2583,7 +2583,7 @@ var PreviewPanel = class _PreviewPanel {
       buffer = Buffer.from(msg.data, "utf-8");
     }
     await vscode.workspace.fs.writeFile(saveUri, buffer);
-    vscode.window.showInformationMessage(`OpenStudio: Saved to ${saveUri.fsPath}`);
+    vscode.window.showInformationMessage(`DocTheatre: Saved to ${saveUri.fsPath}`);
   }
   // ── HTML shell ───────────────────────────────────────────────────────────────
   _getHtmlForWebview() {
@@ -2621,7 +2621,7 @@ var PreviewPanel = class _PreviewPanel {
              img-src ${webview.cspSource} data: blob: https://unpkg.com;
              font-src ${webview.cspSource} https://fonts.gstatic.com https://unpkg.com;
              connect-src blob:;">
-  <title>OpenStudio Preview</title>
+  <title>DocTheatre Preview</title>
   <link rel="stylesheet" href="${cssUri}">
   <script nonce="${nonce}">
     window.__ASSETS__ = {
@@ -2642,7 +2642,7 @@ var PreviewPanel = class _PreviewPanel {
   // ── Dispose ──────────────────────────────────────────────────────────────────
   dispose() {
     _PreviewPanel.current = void 0;
-    vscode.commands.executeCommand("setContext", "openstudio.previewActive", false);
+    vscode.commands.executeCommand("setContext", "doctheatre.previewActive", false);
     this._panel.dispose();
     this._disposables.forEach((d) => d.dispose());
     this._disposables = [];
@@ -2703,7 +2703,7 @@ function preprocessOpenApiRefs(rawContent, basePath) {
     const resolved = resolveRefNode(spec, path.dirname(basePath), visited);
     return JSON.stringify(resolved);
   } catch (err) {
-    console.error("[OpenStudio] OpenAPI $ref preprocessing failed:", err.message);
+    console.error("[DocTheatre] OpenAPI $ref preprocessing failed:", err.message);
     return rawContent;
   }
 }
@@ -2729,7 +2729,7 @@ function resolveRefNode(node, baseDir, visited) {
         return { "$ref": `#${fragment}` };
       }
       if (!fs.existsSync(resolvedPath)) {
-        console.warn(`[OpenStudio] $ref file not found: ${resolvedPath}`);
+        console.warn(`[DocTheatre] $ref file not found: ${resolvedPath}`);
         return obj;
       }
       try {
@@ -2758,7 +2758,7 @@ function resolveRefNode(node, baseDir, visited) {
         }
         return inlined;
       } catch (err) {
-        console.error(`[OpenStudio] Failed to inline $ref "${ref}": ${err.message}`);
+        console.error(`[DocTheatre] Failed to inline $ref "${ref}": ${err.message}`);
         return obj;
       }
     }
@@ -2783,27 +2783,27 @@ function getNonce() {
 function activate(context) {
   const { extensionUri } = context;
   context.subscriptions.push(
-    vscode2.commands.registerCommand("openstudio.openPreview", () => {
+    vscode2.commands.registerCommand("doctheatre.openPreview", () => {
       PreviewPanel.createOrShow(extensionUri);
     })
   );
   context.subscriptions.push(
-    vscode2.commands.registerCommand("openstudio.exportSVG", () => {
+    vscode2.commands.registerCommand("doctheatre.exportSVG", () => {
       PreviewPanel.triggerExport("svg");
     })
   );
   context.subscriptions.push(
-    vscode2.commands.registerCommand("openstudio.exportPNG", () => {
+    vscode2.commands.registerCommand("doctheatre.exportPNG", () => {
       PreviewPanel.triggerExport("png");
     })
   );
   context.subscriptions.push(
-    vscode2.commands.registerCommand("openstudio.exportHTML", () => {
+    vscode2.commands.registerCommand("doctheatre.exportHTML", () => {
       PreviewPanel.triggerExport("html");
     })
   );
   context.subscriptions.push(
-    vscode2.commands.registerCommand("openstudio.exportPDF", () => {
+    vscode2.commands.registerCommand("doctheatre.exportPDF", () => {
       PreviewPanel.triggerExport("pdf");
     })
   );

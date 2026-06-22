@@ -1,6 +1,6 @@
 {
-  "name": "open-studio",
-  "displayName": "Open-Studio",
+  "name": "doctheatre",
+  "displayName": "DocTheatre",
   "description": "Preview Markdown, PlantUML, Mermaid diagrams, and OpenAPI specs directly in VS Code with syntax highlighting, zoom, and export.",
   "version": "0.0.5",
   "publisher": "a-chhiong",
@@ -22,7 +22,7 @@
     "diagram"
   ],
   "activationEvents": [
-    "onCommand:openstudio.openPreview",
+    "onCommand:doctheatre.openPreview",
     "onLanguage:mermaid",
     "onLanguage:plantuml"
   ],
@@ -91,81 +91,81 @@
     ],
     "commands": [
       {
-        "command": "openstudio.openPreview",
-        "title": "OpenStudio: Open Preview",
+        "command": "doctheatre.openPreview",
+        "title": "DocTheatre: Open Preview",
         "icon": "$(preview)"
       },
       {
-        "command": "openstudio.exportSVG",
-        "title": "OpenStudio: Export as SVG",
+        "command": "doctheatre.exportSVG",
+        "title": "DocTheatre: Export as SVG",
         "icon": "$(file-code)"
       },
       {
-        "command": "openstudio.exportPNG",
-        "title": "OpenStudio: Export as PNG",
+        "command": "doctheatre.exportPNG",
+        "title": "DocTheatre: Export as PNG",
         "icon": "$(file-media)"
       },
       {
-        "command": "openstudio.exportHTML",
-        "title": "OpenStudio: Export as HTML",
+        "command": "doctheatre.exportHTML",
+        "title": "DocTheatre: Export as HTML",
         "icon": "$(globe)"
       },
       {
-        "command": "openstudio.exportPDF",
-        "title": "OpenStudio: Export as PDF",
+        "command": "doctheatre.exportPDF",
+        "title": "DocTheatre: Export as PDF",
         "icon": "$(file-pdf)"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "openstudio.openPreview",
+          "command": "doctheatre.openPreview",
           "when": "resourceExtname =~ /^\\.(md|markdown|puml|plantuml|pu|mmd|mermaid|yaml|yml|json)$/",
           "group": "navigation@1"
         },
         {
-          "command": "openstudio.exportSVG",
-          "when": "openstudio.previewActive && openstudio.contentType =~ /^(plantuml|mermaid)$/",
-          "group": "openstudio.export@1"
+          "command": "doctheatre.exportSVG",
+          "when": "doctheatre.previewActive && doctheatre.contentType =~ /^(plantuml|mermaid)$/",
+          "group": "doctheatre.export@1"
         },
         {
-          "command": "openstudio.exportPNG",
-          "when": "openstudio.previewActive && openstudio.contentType =~ /^(plantuml|mermaid)$/",
-          "group": "openstudio.export@2"
+          "command": "doctheatre.exportPNG",
+          "when": "doctheatre.previewActive && doctheatre.contentType =~ /^(plantuml|mermaid)$/",
+          "group": "doctheatre.export@2"
         },
         {
-          "command": "openstudio.exportHTML",
-          "when": "openstudio.previewActive",
-          "group": "openstudio.export@3"
+          "command": "doctheatre.exportHTML",
+          "when": "doctheatre.previewActive",
+          "group": "doctheatre.export@3"
         },
         {
-          "command": "openstudio.exportPDF",
-          "when": "openstudio.previewActive",
-          "group": "openstudio.export@4"
+          "command": "doctheatre.exportPDF",
+          "when": "doctheatre.previewActive",
+          "group": "doctheatre.export@4"
         }
       ],
       "commandPalette": [
         {
-          "command": "openstudio.exportSVG",
-          "when": "openstudio.previewActive"
+          "command": "doctheatre.exportSVG",
+          "when": "doctheatre.previewActive"
         },
         {
-          "command": "openstudio.exportPNG",
-          "when": "openstudio.previewActive"
+          "command": "doctheatre.exportPNG",
+          "when": "doctheatre.previewActive"
         },
         {
-          "command": "openstudio.exportHTML",
-          "when": "openstudio.previewActive"
+          "command": "doctheatre.exportHTML",
+          "when": "doctheatre.previewActive"
         },
         {
-          "command": "openstudio.exportPDF",
-          "when": "openstudio.previewActive"
+          "command": "doctheatre.exportPDF",
+          "when": "doctheatre.previewActive"
         }
       ]
     },
     "keybindings": [
       {
-        "command": "openstudio.openPreview",
+        "command": "doctheatre.openPreview",
         "key": "ctrl+shift+v",
         "mac": "cmd+shift+v",
         "when": "resourceExtname =~ /^\\.(md|markdown|puml|plantuml|pu|mmd|mermaid|yaml|yml|json)$/"
