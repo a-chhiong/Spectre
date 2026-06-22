@@ -4,7 +4,7 @@
   flex-direction: row;
   height: 100%;
   width: 100%;
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   font-family: var(--font-sans);
   overflow: hidden;
 }
@@ -115,7 +115,7 @@
   flex: 1;
   overflow-y: auto;
   position: relative;
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   padding: 24px;
 }
 
@@ -143,21 +143,12 @@
 /* Unified Scrollbar for Sidebar */
 .dbml-sidebar-content::-webkit-scrollbar,
 .dbml-main-content::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  display: none;
 }
-.dbml-sidebar-content::-webkit-scrollbar-track,
-.dbml-main-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-.dbml-sidebar-content::-webkit-scrollbar-thumb,
-.dbml-main-content::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 4px;
-}
-.dbml-sidebar:hover .dbml-sidebar-content::-webkit-scrollbar-thumb,
-.dbml-viewer-layout:hover .dbml-main-content::-webkit-scrollbar-thumb {
-  background-color: rgba(120, 120, 120, 0.4);
+.dbml-sidebar-content,
+.dbml-main-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Sidebar Tree Nodes */

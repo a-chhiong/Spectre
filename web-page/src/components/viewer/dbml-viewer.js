@@ -4,7 +4,6 @@ import { marked } from 'marked';
 import hljs from 'highlight.js';
 import { compileDbmlToMarkdown, compileDbmlToMermaid } from '../../utils/dbml-converter.js';
 import { renderDiagrams } from '../../utils/diagram-processor.js';
-import './dbml-sidebar.js';
 import './diagram-viewer.js';
 import './dbml-viewer.css';
 
@@ -57,22 +56,6 @@ export class DbmlViewer extends LitElement {
       this.viewMode = mode;
       this.requestUpdate();
     }
-  }
-
-  handleSidebarNodeClick(e) {
-    const { path } = e.detail;
-    this.activeEntityPath = path;
-    this._emitBreadcrumb();
-    this.renderContent();
-  }
-
-  handleGroupingModeChange(e) {
-    this.groupingMode = e.detail.mode;
-    if (this.activeEntityPath && !this.activeEntityPath.startsWith('table-') && !this.activeEntityPath.startsWith('enum-')) {
-      this.activeEntityPath = null;
-    }
-    this._emitBreadcrumb();
-    this.renderContent();
   }
 
   handleBreadcrumbNavigation(detail) {
@@ -145,6 +128,14 @@ export class DbmlViewer extends LitElement {
       }
 
       this.database = parser.parseDbmlProject(compilePath);
+      
+      // Emit parsed database for outline-tree
+      this.dispatchEvent(new CustomEvent('dbml-parsed', { 
+        detail: { database: this.database },
+        bubbles: true,
+        composed: true 
+      }));
+
       this._emitBreadcrumb(); // Make sure breadcrumb reflects initial/updated project state
       
       const markdownContent = compileDbmlToMarkdown(this.database, filename, this.activeEntityPath, { hasIndexFile, groupingMode: this.groupingMode });
@@ -271,14 +262,6 @@ export class DbmlViewer extends LitElement {
       this._scrollToElementId = targetPath;
       this.activeEntityPath = targetPath;
       this.requestUpdate();
-      
-      // Also notify sidebar so it can highlight if needed
-      const sidebar = this.renderRoot?.querySelector('dbml-sidebar') || this.querySelector('dbml-sidebar');
-      if (sidebar) {
-        sidebar.activeNodePath = targetPath;
-        sidebar.requestUpdate();
-      }
-      
       this.renderContent();
     }
   }
@@ -334,14 +317,6 @@ export class DbmlViewer extends LitElement {
 
     return html`
       <div class="dbml-viewer-layout">
-        <dbml-sidebar
-          .database=${this.database}
-          .activeNodePath=${this.activeEntityPath}
-          .groupingMode=${this.groupingMode}
-          @node-click=${this.handleSidebarNodeClick}
-          @grouping-mode-change=${this.handleGroupingModeChange}
-        ></dbml-sidebar>
-        
         ${this.viewMode === 'diagram'
           ? html`
               <diagram-viewer

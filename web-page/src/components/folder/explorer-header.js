@@ -4,7 +4,7 @@ import { LitElement, html, css } from 'lit';
 const lockIcon = html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
 const unlockIcon = html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`;
 
-export class FolderHeader extends LitElement {
+export class ExplorerHeader extends LitElement {
   static properties = {
     projects: { type: Array },
     currentKey: { type: String },
@@ -260,10 +260,6 @@ export class FolderHeader extends LitElement {
           ` : ''}
         </div>
         <div class="actions-bar">
-          <!-- Lock toggle -->
-          <button class="icon-btn" title="${this.locked ? 'Unlock to allow edits' : 'Lock to view-only'}" @click=${this.toggleLock}>
-            ${this.locked ? lockIcon : unlockIcon}
-          </button>
           <!-- Root CRUD (hidden when locked) -->
           ${!this.locked ? html`
             <button class="icon-btn" title="Create Root File" @click=${this.createFile}>
@@ -273,10 +269,14 @@ export class FolderHeader extends LitElement {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
             </button>
           ` : ''}
+          <!-- Lock toggle -->
+          <button class="icon-btn" title="${this.locked ? 'Unlock to allow edits' : 'Lock to view-only'}" @click=${this.toggleLock}>
+            ${this.locked ? lockIcon : unlockIcon}
+          </button>
         </div>
       </div>
     `;
   }
 }
 
-customElements.define('folder-header', FolderHeader);
+customElements.define('explorer-header', ExplorerHeader);

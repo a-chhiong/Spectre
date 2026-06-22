@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { projectManager } from '../../services/project-manager.js';
-import './folder-header.js';
+import './explorer-header.js';
 
-export class FolderTree extends LitElement {
+export class ExplorerTree extends LitElement {
   static properties = {
     files: { type: Array },
     activeFile: { type: Object },
@@ -27,65 +27,15 @@ export class FolderTree extends LitElement {
       flex: 1;
       overflow-y: auto;
       padding: 8px 0;
+      /* Hide scrollbar for Firefox and IE/Edge */
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
 
-    /* Unified Auto-hidden Scrollbar */
-    *::-webkit-scrollbar {
-      width: 12px;
-      height: 12px;
-    }
-    *::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    *::-webkit-scrollbar-thumb {
-      background: transparent;
-      border: 3px solid transparent;
-      background-clip: padding-box;
-      border-radius: 6px;
-    }
-    *::-webkit-scrollbar-button:single-button {
-      background-color: transparent;
-      display: block;
-      height: 12px;
-      width: 12px;
-    }
-    
-    .tree-content:hover::-webkit-scrollbar-thumb,
-    .tree-content:hover *::-webkit-scrollbar-thumb {
-      background-color: rgba(120, 120, 120, 0.4);
-    }
-    .tree-content:hover::-webkit-scrollbar-thumb:hover,
-    .tree-content:hover *::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(120, 120, 120, 0.8);
-    }
-    
-    .tree-content:hover::-webkit-scrollbar-button:single-button:vertical:decrement,
-    .tree-content:hover *::-webkit-scrollbar-button:single-button:vertical:decrement {
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23888'><polygon points='50,25 15,75 85,75'/></svg>");
-      background-size: 8px;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-    .tree-content:hover::-webkit-scrollbar-button:single-button:vertical:increment,
-    .tree-content:hover *::-webkit-scrollbar-button:single-button:vertical:increment {
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23888'><polygon points='15,25 85,25 50,75'/></svg>");
-      background-size: 8px;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-    .tree-content:hover::-webkit-scrollbar-button:single-button:horizontal:decrement,
-    .tree-content:hover *::-webkit-scrollbar-button:single-button:horizontal:decrement {
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23888'><polygon points='75,15 75,85 25,50'/></svg>");
-      background-size: 8px;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-    .tree-content:hover::-webkit-scrollbar-button:single-button:horizontal:increment,
-    .tree-content:hover *::-webkit-scrollbar-button:single-button:horizontal:increment {
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23888'><polygon points='25,15 25,85 75,50'/></svg>");
-      background-size: 8px;
-      background-position: center;
-      background-repeat: no-repeat;
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .tree-content::-webkit-scrollbar,
+    .tree-content *::-webkit-scrollbar {
+      display: none;
     }
 
     .node {
@@ -514,7 +464,7 @@ export class FolderTree extends LitElement {
     const tree = this.buildTree(this.files);
 
     return html`
-      <folder-header
+      <explorer-header
         .projects=${this.projects}
         .currentKey=${this.currentKey}
         .locked=${this.locked}
@@ -522,7 +472,7 @@ export class FolderTree extends LitElement {
         @lock-toggle=${() => projectManager.toggleLock()}
         @create-file=${() => this.promptCreateFile('')}
         @create-folder=${() => this.promptCreateFolder('')}
-      ></folder-header>
+      ></explorer-header>
       
       <div class="tree-content">
         ${this.renderNode(tree)}
@@ -531,4 +481,4 @@ export class FolderTree extends LitElement {
   }
 }
 
-customElements.define('folder-tree', FolderTree);
+customElements.define('explorer-tree', ExplorerTree);

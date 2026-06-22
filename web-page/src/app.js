@@ -9,7 +9,7 @@ import 'swagger-ui-dist/swagger-ui.css';
 // Components imports
 import './components/layout/workspace-layout.js';
 import './components/layout/app-header.js';
-import './components/folder-tree/folder-tree.js';
+import './components/folder/code-folder.js';
 import './components/editor/tab-bar.js';
 import './components/editor/code-editor.js';
 import './components/viewer/code-viewer.js';
@@ -25,7 +25,8 @@ export class AppRoot extends LitElement {
     editorVisible: { type: Boolean },
     previewVisible: { type: Boolean },
     activeFile: { type: Object },
-    files: { type: Array }
+    files: { type: Array },
+    dbmlDatabase: { type: Object }
   };
 
   // Render in Light DOM to allow clean layout flows
@@ -40,6 +41,7 @@ export class AppRoot extends LitElement {
     this.previewVisible = true;
     this.activeFile = null;
     this.files = [];
+    this.dbmlDatabase = null;
 
     this.subs = [];
   }
@@ -59,6 +61,26 @@ export class AppRoot extends LitElement {
 
     // Catch global dialog requests from anywhere in your app tree
     this.addEventListener('show-global-dialog', this.handleShowGlobalDialog);
+
+    // Catch parsed DBML database from dbml-viewer
+    this.addEventListener('dbml-parsed', (e) => {
+      this.dbmlDatabase = e.detail.database;
+    });
+
+    // Catch outline node clicks to scroll viewer
+    this.addEventListener('node-click', (e) => {
+      // Propagate down to the code-viewer -> dbml-viewer
+      const viewer = this.renderRoot.querySelector('code-viewer');
+      if (viewer) {
+        const dbmlViewer = viewer.renderRoot.querySelector('#active-dbml-viewer') || viewer.renderRoot.querySelector('dbml-viewer');
+        if (dbmlViewer) {
+           dbmlViewer._scrollToElementId = e.detail.path;
+           dbmlViewer.activeEntityPath = e.detail.path;
+           dbmlViewer.requestUpdate();
+           dbmlViewer.renderContent();
+        }
+      }
+    });
 
     // Bootstrap database and load active projects
     await projectManager.init();
@@ -168,7 +190,11 @@ export class AppRoot extends LitElement {
 
 
   render() {
+    const isDbmlActive = this.activeFile && this.activeFile.path.toLowerCase().endsWith('.dbml');
+
     return html`
+      <style>
+      </style>
       <!-- App Header Bar -->
       <app-header 
         .treeVisible=${this.treeVisible}
@@ -183,7 +209,12 @@ export class AppRoot extends LitElement {
         .previewVisible=${this.previewVisible}
       >
         <!-- Column 1 slot -->
-        <folder-tree slot="tree"></folder-tree>
+        <code-folder 
+          slot="tree" 
+          style="height: 100%; display: block;"
+          .activeFile=${this.activeFile} 
+          .dbmlDatabase=${this.dbmlDatabase}
+        ></code-folder>
 
         <!-- Column 2 slot -->
         <div slot="editor" style="display: flex; flex-direction: column; height: 100%;">
