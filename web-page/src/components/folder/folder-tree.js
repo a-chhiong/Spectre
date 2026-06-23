@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { projectManager } from '../../services/project-manager.js';
-import './explorer-header.js';
+import './folder-header.js';
 
-export class ExplorerTree extends LitElement {
+export class FolderTree extends LitElement {
   static properties = {
     files: { type: Array },
     activeFile: { type: Object },
@@ -464,7 +464,7 @@ export class ExplorerTree extends LitElement {
     const tree = this.buildTree(this.files);
 
     return html`
-      <explorer-header
+      <folder-header
         .projects=${this.projects}
         .currentKey=${this.currentKey}
         .locked=${this.locked}
@@ -472,7 +472,7 @@ export class ExplorerTree extends LitElement {
         @lock-toggle=${() => projectManager.toggleLock()}
         @create-file=${() => this.promptCreateFile('')}
         @create-folder=${() => this.promptCreateFolder('')}
-      ></explorer-header>
+      ></folder-header>
       
       <div class="tree-content">
         ${this.renderNode(tree)}
@@ -481,4 +481,4 @@ export class ExplorerTree extends LitElement {
   }
 }
 
-customElements.define('explorer-tree', ExplorerTree);
+customElements.define('folder-tree', FolderTree);

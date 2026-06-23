@@ -103,7 +103,7 @@ export const DEFAULT_DBML_ECOMMERCE = `// ======================================
 // PROJECT DEFINITION & DOCUMENTATION
 // ===========================================================================
 
-Project "Ecommerce_Platform" {
+Project "Ecommerce" {
   database_type: 'PostgreSQL'
   Note: '''
     # E-commerce Database Schema

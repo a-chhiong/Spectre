@@ -70,7 +70,7 @@ html, body {
   .folder-tree-col,
   .editor-col,
   .splitter-col,
-  .dbml-sidebar-wrapper,
+  dbml-menu,
   tool-bar,
   .no-print {
     display: none !important;

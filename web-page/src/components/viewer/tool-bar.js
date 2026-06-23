@@ -294,7 +294,7 @@ export class ToolBar extends LitElement {
       titleContent = html`
         <div class="dbml-breadcrumb">
           <span class="dbml-breadcrumb-item" @click=${() => this.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { target: 'root' } }))}>
-            ${this.breadcrumb.project || 'Project'}
+            ${this.breadcrumb.project || 'ROOT'}
           </span>
           ${this.breadcrumb.group ? html`
             <span class="dbml-breadcrumb-sep">/</span>

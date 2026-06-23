@@ -5,6 +5,7 @@ import hljs from 'highlight.js';
 import { compileDbmlToMarkdown, compileDbmlToMermaid } from '../../utils/dbml-converter.js';
 import { renderDiagrams } from '../../utils/diagram-processor.js';
 import './diagram-viewer.js';
+import './dbml-menu.js';
 import './dbml-viewer.css';
 
 // Incrementing ID for unique scroll spy observers
@@ -68,8 +69,22 @@ export class DbmlViewer extends LitElement {
     this.renderContent();
   }
 
+  handleSidebarNodeClick(e) {
+    this._scrollToElementId = e.detail.path;
+    this.activeEntityPath = e.detail.path;
+    this.requestUpdate();
+    this.renderContent();
+  }
+
+  handleGroupingModeChange(e) {
+    this.groupingMode = e.detail.mode;
+    this.activeEntityPath = null;
+    this.requestUpdate();
+    this.renderContent();
+  }
+
   _emitBreadcrumb() {
-    const projectName = this.database && this.database.project ? this.database.project.name : 'Project';
+    const projectName = this.database && this.database.name ? this.database.name : 'Project';
     const b = { project: projectName, group: '', entity: '', groupPath: '' };
 
     if (this.activeEntityPath) {
@@ -129,13 +144,13 @@ export class DbmlViewer extends LitElement {
 
       this.database = parser.parseDbmlProject(compilePath);
       
-      // Emit parsed database for outline-tree
-      this.dispatchEvent(new CustomEvent('dbml-parsed', { 
-        detail: { database: this.database },
-        bubbles: true,
-        composed: true 
-      }));
-
+      // Notify sidebar of update if it exists
+      const sidebar = this.querySelector('dbml-menu') || this.renderRoot?.querySelector('dbml-menu');
+      if (sidebar) {
+        sidebar.database = this.database;
+        sidebar.requestUpdate();
+      }
+      
       this._emitBreadcrumb(); // Make sure breadcrumb reflects initial/updated project state
       
       const markdownContent = compileDbmlToMarkdown(this.database, filename, this.activeEntityPath, { hasIndexFile, groupingMode: this.groupingMode });
@@ -261,6 +276,14 @@ export class DbmlViewer extends LitElement {
       const targetPath = link.getAttribute('href').substring(1); // removes '#'
       this._scrollToElementId = targetPath;
       this.activeEntityPath = targetPath;
+      
+      // Also notify sidebar so it can highlight if needed
+      const sidebar = this.renderRoot?.querySelector('dbml-menu') || this.querySelector('dbml-menu');
+      if (sidebar) {
+        sidebar.activeNodePath = targetPath;
+        sidebar.requestUpdate();
+      }
+      
       this.requestUpdate();
       this.renderContent();
     }
@@ -313,10 +336,17 @@ export class DbmlViewer extends LitElement {
     const mainContentClass = this.viewMode === 'diagram' ? 'dbml-main-content diagram-view' : 'dbml-main-content';
     
     // Project Name from dbml
-    const projectName = this.database && this.database.project ? this.database.project.name : 'Project';
+    const projectName = this.database && this.database.name ? this.database.name : 'Project';
 
     return html`
-      <div class="dbml-viewer-layout">
+      <div class="dbml-viewer-layout" style="position: relative;">
+        <dbml-menu
+          .database=${this.database}
+          .activeNodePath=${this.activeEntityPath}
+          .groupingMode=${this.groupingMode}
+          @node-click=${this.handleSidebarNodeClick}
+          @grouping-mode-change=${this.handleGroupingModeChange}
+        ></dbml-menu>
         ${this.viewMode === 'diagram'
           ? html`
               <diagram-viewer
