@@ -1,5 +1,5 @@
 {
-  "name": "doctheatre",
+  "name": "@doctheatre/vscode-ext",
   "displayName": "DocTheatre",
   "description": "Preview Markdown, PlantUML, Mermaid diagrams, and OpenAPI specs directly in VS Code with syntax highlighting, zoom, and export.",
   "version": "0.0.5",
@@ -117,28 +117,15 @@
         "icon": "$(file-pdf)"
       },
       {
-        "command": "doctheatre.scrollToNode",
-        "title": "DocTheatre: Scroll to Node",
-        "icon": "$(go-to-file)"
-      },
-      {
-        "command": "doctheatre.toggleDbmlGrouping",
-        "title": "DocTheatre: Toggle Grouping",
-        "icon": "$(list-flat)"
+        "command": "doctheatre.toggleTheme",
+        "title": "DocTheatre: Toggle Preview Theme",
+        "icon": "$(color-mode)"
       }
     ],
     "viewsContainers": {
       "activitybar": []
     },
-    "views": {
-      "explorer": [
-        {
-          "id": "doctheatre-dbml-structure",
-          "name": "OUTLINE DBML",
-          "when": "doctheatre.contentType == 'dbml' && doctheatre.previewActive"
-        }
-      ]
-    },
+    "views": {},
     "menus": {
       "editor/title": [
         {
@@ -183,13 +170,10 @@
         {
           "command": "doctheatre.exportPDF",
           "when": "doctheatre.previewActive"
-        }
-      ],
-      "view/title": [
+        },
         {
-          "command": "doctheatre.toggleDbmlGrouping",
-          "when": "view == doctheatre-dbml-structure",
-          "group": "navigation"
+          "command": "doctheatre.toggleTheme",
+          "when": "doctheatre.previewActive"
         }
       ]
     },
@@ -223,12 +207,15 @@
   },
   "dependencies": {
     "@dbml/core": "^8.3.0",
+    "@doctheatre/core": "*",
+    "@lit/context": "^1.1.0",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
     "highlight.js": "^11.11.1",
+    "html2pdf.js": "^0.14.0",
     "js-yaml": "^4.1.0",
     "lit": "^3.1.2",
     "marked": "^12.0.1",
     "mermaid": "^10.9.0",
-    "rapipdf": "^2.2.1",
     "swagger-ui-dist": "latest"
   }
 }

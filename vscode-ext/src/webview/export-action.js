@@ -14,6 +14,7 @@ export class ExportAction {
     this._getPreview = getPreview;
     this._open       = false;
     this._contentType = '';
+    this._viewMode    = 'doc'; // track for dbml 'doc' vs 'erd'
 
     this._root = document.createElement('div');
     this._root.className = 'os-export-container';
@@ -21,6 +22,12 @@ export class ExportAction {
 
     this._render();
     this._attachOutsideClick();
+
+    // Listen for DBML view mode changes
+    window.addEventListener('dbml-view-mode-changed', (e) => {
+      this._viewMode = e.detail;
+      this._render();
+    });
   }
 
   setContentType(ct) {
@@ -75,7 +82,10 @@ export class ExportAction {
   }
 
   _getOptions() {
-    const isDiagram = this._contentType === 'plantuml' || this._contentType === 'mermaid';
+    const isDiagram = this._contentType === 'plantuml' || 
+                      this._contentType === 'mermaid' || 
+                      (this._contentType === 'dbml' && this._viewMode === 'erd');
+
     if (isDiagram) {
       return [
         { label: 'Export SVG',  format: 'svg',  icon: this._svgIcon() },

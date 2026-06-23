@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { PreviewPanel } from './PreviewPanel';
-import { DbmlTreeProvider } from './DbmlTreeProvider';
 
 export function activate(context: vscode.ExtensionContext): void {
   const { extensionUri } = context;
@@ -38,25 +37,14 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
-  // ── DBML Sidebar ────────────────────────────────────────────────────────────
-  const dbmlTreeProvider = new DbmlTreeProvider();
   context.subscriptions.push(
-    vscode.window.registerTreeDataProvider('doctheatre-dbml-structure', dbmlTreeProvider)
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('doctheatre.toggleDbmlGrouping', () => {
-      dbmlTreeProvider.toggleGroupingMode();
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('doctheatre.scrollToNode', (nodePath: string) => {
+    vscode.commands.registerCommand('doctheatre.toggleTheme', () => {
       if (PreviewPanel.current) {
-        PreviewPanel.current.scrollToNode(nodePath);
+        PreviewPanel.current.toggleTheme();
       }
     })
   );
+
 
   // ── Swagger $ref Link Provider ─────────────────────────────────────────────
   // Makes `$ref: "./path/to/file.yaml"` clickable in the editor, matching the

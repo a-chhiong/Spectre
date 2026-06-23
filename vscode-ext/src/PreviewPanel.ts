@@ -78,6 +78,10 @@ export class PreviewPanel {
     this._panel.webview.postMessage({ type: 'scroll-to-node', path: nodePath });
   }
 
+  public toggleTheme(): void {
+    this._panel.webview.postMessage({ type: 'toggle-theme' });
+  }
+
   // ── Constructor ─────────────────────────────────────────────────────────────
 
   private constructor(
@@ -141,7 +145,7 @@ export class PreviewPanel {
     this._pushDocument(editor.document);
   }
 
-  private _pushDocument(doc: vscode.TextDocument): void {
+  private async _pushDocument(doc: vscode.TextDocument): Promise<void> {
     const filePath = doc.uri.fsPath;
     const contentType = getContentType(filePath);
     if (contentType === 'unknown') { return; }
@@ -162,13 +166,43 @@ export class PreviewPanel {
       content = preprocessOpenApiRefs(content, filePath);
     }
 
+    const workspaceFiles = await this._getWorkspaceFiles();
+
     this._panel.webview.postMessage({
       type: 'update',
-      path: filePath,
+      path: vscode.workspace.asRelativePath(doc.uri, false),
       filename: path.basename(filePath),
       contentType,
       content,
+      workspaceFiles
     });
+  }
+
+  private async _getWorkspaceFiles(): Promise<{ path: string; content: string; type: 'file' }[]> {
+    const files: { path: string; content: string; type: 'file' }[] = [];
+    if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+      return files;
+    }
+
+    const includePattern = '**/*.{md,dbml,yaml,yml,json,puml,plantuml,mermaid,mmd}';
+    const excludePattern = '**/{node_modules,.git,dist,out,build}/**';
+
+    try {
+      const uris = await vscode.workspace.findFiles(includePattern, excludePattern, 200);
+      for (const uri of uris) {
+        const buffer = await vscode.workspace.fs.readFile(uri);
+        const content = Buffer.from(buffer).toString('utf-8');
+        const workspacePath = vscode.workspace.asRelativePath(uri, false);
+        files.push({
+          path: workspacePath,
+          content,
+          type: 'file'
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching workspace files:', err);
+    }
+    return files;
   }
 
   // ── Message handler ──────────────────────────────────────────────────────────
@@ -287,7 +321,7 @@ export class PreviewPanel {
              style-src 'unsafe-inline' ${webview.cspSource} https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com;
              img-src ${webview.cspSource} data: blob: https://unpkg.com;
              font-src ${webview.cspSource} https://fonts.gstatic.com https://unpkg.com;
-             connect-src blob:;">
+             connect-src ${webview.cspSource} blob:;">
   <title>DocTheatre Preview</title>
   <link rel="stylesheet" href="${cssUri}">
   <script nonce="${nonce}">

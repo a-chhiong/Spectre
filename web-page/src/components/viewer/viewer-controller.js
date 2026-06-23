@@ -1,5 +1,5 @@
 import { projectManager } from '../../services/project-manager.js';
-import { resolverService } from '../../utils/spec-resolver.js';
+import { resolverService } from '@doctheatre/core/utils/spec-resolver.js';
 import { exporterService } from '../../utils/file-exporter.js';
 
 /**
@@ -53,12 +53,22 @@ export class ViewerController {
       }
     };
     this.host.addEventListener('click', this._clickHandler);
+
+    // Intercept open-tab events emitted by core components (like swagger-viewer)
+    this._openTabHandler = (e) => {
+      const { path } = e.detail;
+      if (path) {
+        projectManager.openTab(path);
+      }
+    };
+    this.host.addEventListener('open-tab', this._openTabHandler);
   }
 
   hostDisconnected() {
     this.subs.forEach(s => s.unsubscribe());
     this.subs = [];
     this.host.removeEventListener('click', this._clickHandler);
+    this.host.removeEventListener('open-tab', this._openTabHandler);
     if (this._updateTimeout) clearTimeout(this._updateTimeout);
   }
 

@@ -4,10 +4,10 @@ import './code-viewer.css';
 import 'highlight.js/styles/github.css';
 
 // Import viewer components to register custom elements
-import './markdown-viewer.js';
-import './dbml-viewer.js';
-import './diagram-viewer.js';
-import './swagger-viewer.js';
+import '@doctheatre/core/components/markdown-viewer.js';
+import '@doctheatre/core/components/dbml-viewer.js';
+import '@doctheatre/core/components/diagram-viewer.js';
+import '@doctheatre/core/components/swagger-viewer.js';
 
 export class CodeViewer extends LitElement {
   static properties = {

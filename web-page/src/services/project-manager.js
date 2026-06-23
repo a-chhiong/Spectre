@@ -160,7 +160,8 @@ paths: {}
     await dbService.saveFilesBulk(initialFiles);
 
     await this.refreshProjectList();
-    await this.switchProject(key);
+    const defaultOpen = cleanStart ? 'openapi.yaml' : 'openapi/openapi.yaml';
+    await this.switchProject(key, defaultOpen);
   }
 
   /**
@@ -210,18 +211,6 @@ paths: {}
 
     if (activeFile) {
       this.activeFile$.next(activeFile);
-    } else if (files.length > 0) {
-      // Fallback
-      const fallback = files.find(f => f.type === 'file');
-      if (fallback) {
-        this.activeFile$.next(fallback);
-        if (!openTabs.includes(fallback.path)) {
-          openTabs.push(fallback.path);
-          this.openTabs$.next([...openTabs]);
-        }
-      } else {
-        this.activeFile$.next(null);
-      }
     } else {
       this.activeFile$.next(null);
     }

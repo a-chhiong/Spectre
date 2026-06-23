@@ -1,0 +1,365 @@
+Table core.users {
+  id int [PK
+increment, note: "Id of the user"]
+  full_name varchar [note: "Fullname of the user"]
+  email varchar [note: "Email address of the user"]
+  username varchar [note: "Username chosen by the user"]
+  password varchar [note: "Hashed password of the user"]
+  phone_number varchar [note: "Phone number of the user"]
+  last_login timestamp [note: "Timestamp of the user's last login"]
+  avatar_url varchar [note: "URL of the user's profile picture"]
+  created_at timestamp [note: "When user created"]
+  country_code int [note: "Country of the user"]
+
+  Note: '''
+  The users table stores information about each user registered on the platform. It includes personal details, authentication credentials, and metadata about account creation and activity.
+  Recent activities
+  Id of the user
+  Fullname of the user
+  Email address of the user
+  Username chosen by the user
+  Hashed password of the user
+  Phone number of the user
+  Timestamp of the user's last login
+  URL of the user's profile picture
+  When user created
+  Country of the user
+  '''
+}
+
+Table core.order_items {
+  id int [PK
+increment, note: "Id of the order item"]
+  order_id int [not_null, note: "Id of the order"]
+  product_id int [not_null, note: "Id of the product in the order item"]
+  product_name varchar [note: "Name of the product in the order item"]
+  quantity int [check: quantity > 0, note: "Default: 1
+
+Quantity of the item"]
+  status orders_status
+E
+  price decimal [check: price >= 0, note: "Price of the order item"]
+  image_url varchar [note: "URL of the product image in the order item"]
+
+  Note: '''
+  Recent activities
+  Id of the order item
+  Id of the order
+  Id of the product in the order item
+  Name of the product in the order item
+  Quantity of the item
+  Price of the order item
+  URL of the product image in the order item
+  '''
+}
+
+Table core.orders {
+  id int [PK, note: "Id of the order"]
+  user_id int [not_null
+unique]
+  status orders_status
+E [note: "Status of the order:
+
+pending
+processing
+shipped
+canceled"]
+  created_at varchar [note: "When order created"]
+  total_price decimal [check: total_price >= 0, note: "Total price of the order"]
+  shipping_address varchar [note: "Shipping address of the order"]
+  billing_address varchar [note: "Billing address of the order"]
+  payment_method varchar [note: "Payment method used for the order"]
+  payment_status varchar [note: "Payment status of the order"]
+  shipping_carrier_id int [note: "Id of the shipping carrier"]
+
+  Note: '''
+  Recent activities
+  Id of the order
+  Status of the order:
+  When order created
+  Total price of the order
+  Shipping address of the order
+  Billing address of the order
+  Payment method used for the order
+  Payment status of the order
+  Id of the shipping carrier
+  '''
+}
+
+Table core.order_item_variants {
+  id int [PK
+increment, note: "Id of the order item variant"]
+  order_item_id int [not_null, note: "Id of the order item"]
+  product_variant_id int [not_null, note: "Id of the product variant"]
+
+  Note: '''
+  Recent activities
+  Id of the order item variant
+  Id of the order item
+  Id of the product variant
+  '''
+}
+
+Table core.merchants {
+  id int [note: "Id of the merchant"]
+  country_code int [note: "Country of the merchant"]
+  status orders_status
+E
+  merchant_name varchar
+  address varchar [note: "Address of the merchant"]
+  website_url varchar [note: "URL of the merchant's website"]
+  phone_number varchar [note: "Phone number of the merchant"]
+  email varchar [note: "Email address of the merchant"]
+  logo_url varchar [note: "URL of the merchant'slogo"]
+  created_at datetime [note: "Default: now()
+
+When merchant created"]
+
+  Note: '''
+  Recent activities
+  Id of the merchant
+  Country of the merchant
+  Address of the merchant
+  URL of the merchant's website
+  Phone number of the merchant
+  Email address of the merchant
+  URL of the merchant'slogo
+  When merchant created
+  '''
+}
+
+Table core.shipping_carriers {
+  id int [PK
+increment, note: "Id of the shipping carrier"]
+  name varchar [note: "Name of the shipping carrier"]
+  tracking_url varchar [note: "URL for tracking the shipment"]
+
+  Note: '''
+  Recent activities
+  Id of the shipping carrier
+  Name of the shipping carrier
+  URL for tracking the shipment
+  '''
+}
+
+Table core.payment_transactions {
+  id int [PK
+increment, note: "Id of the payment transaction"]
+  order_id int [not_null, note: "Id of the order"]
+  amount int [check: amount >= 0, note: "Amount of the payment transaction"]
+  status varchar [note: "Status of the payment transaction"]
+  created_at datetime [note: "Default: now()
+
+When payment transaction created"]
+  payment_method varchar [note: "Payment method used for the transaction"]
+  transaction_id varchar [note: "Transaction id of the payment"]
+
+  Note: '''
+  Recent activities
+  Id of the payment transaction
+  Id of the order
+  Amount of the payment transaction
+  Status of the payment transaction
+  When payment transaction created
+  Payment method used for the transaction
+  Transaction id of the payment
+  '''
+}
+
+Table core.promotions {
+  id int [PK
+increment, note: "Id of the promotion"]
+  name varchar [note: "Name of the promotion"]
+  description varchar [note: "Description of the promotion"]
+  discount_percentage decimal [check: discount_percentage >= 0 AND discount_percentage <= 100, note: "Discount percentage of the promotion"]
+  start_date datetime [not_null, note: "Start date of the promotion"]
+  end_date datetime [not_null, note: "End date of the promotion"]
+  product_id int [not_null, note: "Id of the product associated with the promotion, if any"]
+
+  Note: '''
+  Recent activities
+  Id of the promotion
+  Name of the promotion
+  Description of the promotion
+  Discount percentage of the promotion
+  Start date of the promotion
+  End date of the promotion
+  Id of the product associated with the promotion, if any
+  '''
+}
+
+Table info.countries {
+  code int [PK, note: "Referred from here"]
+  name varchar [note: "Name of the country"]
+  continent_name varchar [note: "Continent name of the country"]
+
+  Note: '''
+  Recent activities
+  Referred from here
+  Name of the country
+  Continent name of the country
+  '''
+}
+
+Table product.products {
+  id int [PK, note: "The product id"]
+  name varchar [note: "The product name"]
+  description varchar [note: "Description of the product"]
+  brand varchar [note: "Brand of the product"]
+  color varchar [note: "Color of the product"]
+  weight float [check: weight >= 0, note: "Weight of the product"]
+  dimensions varchar [note: "Dimensions of the product"]
+  rating float [check: rating >= 0 AND rating <= 5, note: "Rating of the product"]
+  merchant_id int [not_null, note: "The merchant id of the product"]
+  price decimal [check: price >= 0, note: "Price of the product"]
+  created_at datetime [note: "Default: now()
+
+When product created"]
+  category_id int [note: "Id of the category the product belongs to"]
+  expiry_date datetime [note: "Expiration date of the product from the maker"]
+
+  Note: '''
+  Recent activities
+  The product id
+  The product name
+  Description of the product
+  Brand of the product
+  Color of the product
+  Weight of the product
+  Dimensions of the product
+  Rating of the product
+  The merchant id of the product
+  Price of the product
+  When product created
+  Id of the category the product belongs to
+  Expiration date of the product from the maker
+  '''
+}
+
+Table product.categories {
+  id int [PK
+increment, note: "Id of the category"]
+  name varchar [note: "Name of the category"]
+  parent_category_id int [note: "Id of the parent category, if any"]
+
+  Note: '''
+  Recent activities
+  Id of the category
+  Name of the category
+  Id of the parent category, if any
+  '''
+}
+
+Table product.product_variants {
+  id int [PK
+increment, note: "Id of the product variant"]
+  name varchar [note: "Name of the product variant"]
+  product_id int [not_null, note: "Id of the product"]
+
+  Note: '''
+  Recent activities
+  Id of the product variant
+  Name of the product variant
+  Id of the product
+  '''
+}
+
+Table product.product_tags {
+  id int [PK, note: "Id of the product tag"]
+  name varchar [note: "Name of the product tag"]
+
+  Note: '''
+  A label to identification or to give other information for the product.
+Example a product of T-shirt may has some tags as clothes, unisex, children.
+  Recent activities
+  Id of the product tag
+  Name of the product tag
+  '''
+}
+
+Table product.product_tags_map {
+  product_id int [not_null, note: "The product id"]
+  tag_id int [not_null, note: "The tag id"]
+
+  Note: '''
+  Recent activities
+  The product id
+  '''
+}
+
+Table cart.cart_items {
+  id int [PK
+increment, note: "Id of the cart item"]
+  user_id int [not_null
+unique]
+  product_id int [not_null, note: "The product id"]
+  quantity int [check: quantity > 0, note: "Default: 1
+
+Quantity of the item"]
+  created_at datetime [note: "Default: now()
+
+When item added to cart"]
+
+  Note: '''
+  Recent activities
+  Id of the cart item
+  The product id
+  Quantity of the item
+  When item added to cart
+  '''
+}
+
+Table review.reviews {
+  id int [PK
+increment, note: "Id of the review"]
+  user_id int [not_null, note: "The user id who wrote the review"]
+  product_id int [not_null, note: "The reviewed product id"]
+  rating int [check: rating >= 0 AND rating <= 5, note: "Rating of the review"]
+  comment varchar [note: "Comment of the review"]
+  created_at datetime [note: "Default: now()
+
+When review created"]
+
+  Note: '''
+  Recent activities
+  Id of the review
+  The user id who wrote the review
+  The reviewed product id
+  Rating of the review
+  Comment of the review
+  When review created
+  '''
+}
+
+Table wishlist.wishlists {
+  id int [PK
+increment, note: "Id of the wishlist"]
+  user_id int [not_null, note: "Id of the user who created the wishlist"]
+  name varchar [note: "Name of the wishlist"]
+
+  Note: '''
+  Recent activities
+  Id of the wishlist
+  Id of the user who created the wishlist
+  Name of the wishlist
+  '''
+}
+
+Table wishlist.wishlist_items {
+  id int [PK
+increment, note: "Id of the wishlist item"]
+  wishlist_id int [not_null, note: "Id of the wishlist"]
+  product_id int [not_null, note: "Id of the product in the wishlist item"]
+  created_at datetime [note: "Default: now()
+
+When wishlist item created"]
+
+  Note: '''
+  Recent activities
+  Id of the wishlist item
+  Id of the wishlist
+  Id of the product in the wishlist item
+  When wishlist item created
+  '''
+}
+

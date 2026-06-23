@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html><body>
+<script src="./node_modules/rapipdf/dist/rapipdf-min.js"></script>
+<script>
+  setTimeout(() => {
+    const el = document.createElement('rapi-pdf');
+    console.log("Keys:", Object.keys(el));
+    console.log("Proto:", Object.getOwnPropertyNames(Object.getPrototypeOf(el)));
+  }, 1000);
+</script>
+</body></html>

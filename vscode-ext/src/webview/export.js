@@ -16,15 +16,15 @@ export function setFileName(name) {
 /**
  * Entry point — called from both the ⋮ button and trigger-export messages.
  * @param {'svg'|'png'|'html'|'pdf'} format
- * @param {HTMLElement}               previewArea
+ * @param {HTMLElement}               container (usually the #preview-container inside <extension-app>)
  */
-export async function handleExport(format, previewArea) {
+export async function handleExport(format, container) {
   try {
     switch (format) {
-      case 'svg':  await exportSVG(previewArea);  break;
-      case 'png':  await exportPNG(previewArea);  break;
-      case 'html': await exportHTML(previewArea); break;
-      case 'pdf':  exportPDF(previewArea);        break;
+      case 'svg':  await exportSVG(container);  break;
+      case 'png':  await exportPNG(container);  break;
+      case 'html': await exportHTML(container); break;
+      case 'pdf':  exportPDF(container);        break;
       default:
         console.warn('[export] Unknown format:', format);
     }
@@ -36,7 +36,8 @@ export async function handleExport(format, previewArea) {
 
 // ── SVG ────────────────────────────────────────────────────────────────────────
 async function exportSVG(area) {
-  const svg = area?.querySelector('svg');
+  const viewer = area?.querySelector('diagram-viewer');
+  const svg = viewer ? viewer.getSVGElement() : area?.querySelector('svg');
   if (!svg) { throw new Error('No diagram SVG found to export.'); }
 
   const clone = svg.cloneNode(true);
@@ -65,7 +66,8 @@ async function exportSVG(area) {
 
 // ── PNG ────────────────────────────────────────────────────────────────────────
 async function exportPNG(area) {
-  const svg = area?.querySelector('svg');
+  const viewer = area?.querySelector('diagram-viewer');
+  const svg = viewer ? viewer.getSVGElement() : area?.querySelector('svg');
   if (!svg) { throw new Error('No diagram SVG found to export.'); }
 
   const canvas = await svgToCanvas(svg);
@@ -98,7 +100,18 @@ async function svgToCanvas(svg) {
 // ── HTML ───────────────────────────────────────────────────────────────────────
 async function exportHTML(area) {
   if (!area) { throw new Error('Preview area not found.'); }
-  const inner = area.innerHTML;
+  
+  let inner = area.innerHTML;
+  const viewer = area.querySelector('diagram-viewer');
+  const dbmlViewer = area.querySelector('dbml-viewer');
+
+  if (viewer) {
+    const canvas = viewer.renderRoot?.querySelector('.diagram-viewer-canvas') || viewer.querySelector('.diagram-viewer-canvas');
+    if (canvas) inner = canvas.innerHTML;
+  } else if (_contentType === 'dbml' && dbmlViewer && typeof dbmlViewer.getExportHtml === 'function') {
+    inner = await dbmlViewer.getExportHtml();
+  }
+
   let rawContent = null;
   if (_contentType === 'swagger') {
     if (window.ui && window.ui.specSelectors) {

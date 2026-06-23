@@ -28,6 +28,8 @@ export class TabBar extends LitElement {
       flex: 1;
       overflow-x: auto;
       overflow-y: hidden;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
     }
 
     .tabs-container::-webkit-scrollbar {

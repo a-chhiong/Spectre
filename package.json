@@ -1,0 +1,9 @@
+{
+  "name": "doctheatre-workspace",
+  "private": true,
+  "workspaces": [
+    "web-page",
+    "vscode-ext",
+    "packages/*"
+  ]
+}

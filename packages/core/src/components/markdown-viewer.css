@@ -1,0 +1,314 @@
+/* markdown-viewer.css - Co-located companion for markdown-viewer.js */
+
+markdown-viewer {
+  display: contents;
+}
+
+.markdown-viewer-host {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+.markdown-viewer-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 2rem;
+  text-align: center;
+}
+
+.markdown-viewer-placeholder svg {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+  color: var(--text-secondary);
+}
+
+.markdown-viewer-error {
+  padding: 2rem;
+  color: var(--color-error);
+  font-family: var(--font-mono);
+}
+
+/* Workspace links styled distinctly */
+.markdown-preview a.workspace-link {
+  color: var(--accent-color);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Premium Markdown previewer styles based on github-markdown-css
+───────────────────────────────────────────────────────────────────────────── */
+.markdown-preview {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 0.96rem;
+  padding: 2rem 3rem;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.markdown-preview h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.6rem;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.markdown-preview h2 {
+  font-size: 1.45rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 1.2rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.4rem;
+  letter-spacing: -0.015em;
+}
+
+.markdown-preview h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 1.8rem;
+  margin-bottom: 0.8rem;
+  color: var(--text-primary);
+}
+
+.markdown-preview h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+  color: var(--text-primary);
+}
+
+.markdown-preview p {
+  margin-bottom: 1.2rem;
+}
+
+.markdown-preview ul, 
+.markdown-preview ol {
+  margin-left: 1.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.markdown-preview li {
+  margin-bottom: 0.35rem;
+}
+
+.markdown-preview a {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-normal);
+}
+
+.markdown-preview a:hover {
+  text-decoration: underline;
+}
+
+.markdown-preview pre {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 1.2rem;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+}
+
+.markdown-preview code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--bg-tertiary);
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--border-radius-sm);
+  color: var(--accent-color);
+}
+
+.markdown-preview pre code {
+  padding: 0;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.markdown-preview blockquote {
+  margin: 0 0 1.5rem 0;
+  padding: 0.8rem 1.2rem;
+  border-left: 4px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+  font-style: italic;
+}
+
+/* Clickable Table of Contents styling */
+.markdown-preview .toc-container {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.markdown-preview .toc-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.markdown-preview .toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.6rem;
+}
+
+.markdown-preview .toc-item {
+  margin: 0;
+}
+
+.markdown-preview .toc-item a {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.markdown-preview .toc-item a:hover {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+/* Callout Alerts (GitHub style markup parsed custom alerts) */
+.markdown-preview .alert-callout {
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid;
+  border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+}
+
+.markdown-preview .alert-title {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.markdown-preview .alert-note {
+  border-left-color: #3498db;
+  background: rgba(52, 152, 219, 0.05);
+}
+.markdown-preview .alert-note .alert-title { color: #3498db; }
+
+.markdown-preview .alert-tip {
+  border-left-color: #2ecc71;
+  background: rgba(46, 204, 113, 0.05);
+}
+.markdown-preview .alert-tip .alert-title { color: #2ecc71; }
+
+.markdown-preview .alert-important {
+  border-left-color: #9b59b6;
+  background: rgba(155, 89, 182, 0.05);
+}
+.markdown-preview .alert-important .alert-title { color: #9b59b6; }
+
+.markdown-preview .alert-warning {
+  border-left-color: #f1c40f;
+  background: rgba(241, 196, 15, 0.05);
+}
+.markdown-preview .alert-warning .alert-title { color: #f1c40f; }
+
+.markdown-preview .alert-caution {
+  border-left-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.05);
+}
+.markdown-preview .alert-caution .alert-title { color: #e74c3c; }
+
+/* Markdown Table Layout */
+.markdown-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+
+.markdown-preview th, 
+.markdown-preview td {
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+}
+
+.markdown-preview th {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.markdown-preview tr:nth-child(even) {
+  background-color: var(--bg-primary);
+}
+
+/* Diagrams alignment and styling */
+.mermaid,
+.plantuml-svg-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  overflow-x: auto;
+}
+
+.mermaid svg,
+.plantuml-svg-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Horizontal rule separator styling */
+.markdown-preview hr {
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  margin: 2.5rem 0;
+}
+
+/* ── highlight.js syntax mapping ─────────────────────────────────────────── */
+.hljs { color: var(--text-primary); }
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--syntax-keyword); font-weight: 500; }
+.hljs-string, .hljs-regexp, .hljs-addition, .hljs-attribute { color: var(--syntax-string); }
+.hljs-comment, .hljs-quote { color: var(--syntax-comment); font-style: italic; }
+.hljs-number { color: var(--syntax-number); }
+.hljs-type, .hljs-class .hljs-title { color: var(--syntax-type); }
+.hljs-meta, .hljs-meta .hljs-keyword { color: var(--syntax-meta); }
+.hljs-operator { color: var(--syntax-operator); }
+.hljs-variable, .hljs-template-variable { color: var(--syntax-variable); }
+.hljs-property, .hljs-attr { color: var(--syntax-property); }
+.hljs-tag, .hljs-name, .hljs-deletion { color: var(--syntax-tag); }
+.hljs-symbol, .hljs-bullet { color: var(--syntax-atom); }
+.hljs-link { color: var(--syntax-link); text-decoration: underline; }
+.hljs-section, .hljs-title, .hljs-title.function_ { color: var(--syntax-heading); font-weight: 600; }
+.hljs-doctag { color: var(--syntax-meta); }
+.hljs-params { color: var(--text-primary); }

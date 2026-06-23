@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
+import { ContextProvider } from '@lit/context';
+import { WorkspaceContext } from '@doctheatre/core/context/workspace-context.js';
 import { projectManager } from './services/project-manager.js';
-import { resolverService } from './utils/spec-resolver.js';
 
 // Styles imports
 import './styles/main.css';
@@ -13,8 +14,9 @@ import './components/folder/folder-tree.js';
 import './components/editor/tab-bar.js';
 import './components/editor/code-editor.js';
 import './components/viewer/code-viewer.js';
+import '@doctheatre/core/components/markdown-viewer.js';
 import './components/viewer/tool-bar.js';
-import './components/viewer/diagram-viewer.js';
+import '@doctheatre/core/components/diagram-viewer.js';
 import './components/layout/menu-dropdown.js';
 import './components/layout/panel-toggles.js';
 import './components/common/app-dialog.js';
@@ -42,6 +44,9 @@ export class AppRoot extends LitElement {
     this.files = [];
 
     this.subs = [];
+
+    // Initialize the context provider to feed global state down to shared core components
+    new ContextProvider(this, { context: WorkspaceContext, initialValue: projectManager });
   }
 
   async connectedCallback() {

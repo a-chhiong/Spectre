@@ -1,6 +1,6 @@
 import variablesCss from '../styles/variables.css?raw';
-import markdownCss from '../styles/markdown.css?raw';
-import dbdocsCss from '../styles/dbdocs.css?raw';
+import markdownCss from '@doctheatre/core/components/markdown-viewer.css?raw';
+import dbdocsCss from '@doctheatre/core/components/dbml-viewer.css?raw';
 
 /**
  * Helper: Download a blob as a file in the browser
@@ -35,53 +35,7 @@ export function getExportFilename(projectName, activeFile, suffix, scope = null)
   return `${cleanProjName}${suffix}`;
 }
 
-/**
- * Helper: Recursively sanitizes OpenAPI specification objects to prevent rendering/export crashes
- * (e.g., handles parameters defined directly with type but missing schema wrapper, and type: array missing items)
- */
-export function sanitizeSpec(obj) {
-  if (obj === null || typeof obj !== 'object') {
-    return obj;
-  }
-
-  if (Array.isArray(obj)) {
-    for (let i = 0; i < obj.length; i++) {
-      obj[i] = sanitizeSpec(obj[i]);
-    }
-    return obj;
-  }
-
-  // Fix parameters without schema object
-  if (obj.in && obj.name) {
-    if (!obj.schema || typeof obj.schema !== 'object') {
-      if (obj.type) {
-        obj.schema = {
-          type: obj.type,
-          format: obj.format,
-          enum: obj.enum,
-          default: obj.default,
-          pattern: obj.pattern,
-          items: obj.items
-        };
-      } else {
-        obj.schema = { type: 'string' };
-      }
-    }
-  }
-
-  // Fix array type schemas without items definition
-  if (obj.type === 'array' && !obj.items) {
-    obj.items = { type: 'string' };
-  }
-
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      obj[key] = sanitizeSpec(obj[key]);
-    }
-  }
-
-  return obj;
-}
+import { sanitizeSpec } from '@doctheatre/core/utils/spec-resolver.js';
 
 /**
  * Convert SVG to Canvas for PNG export
@@ -341,63 +295,13 @@ export const exporterService = {
   },
 
   /**
-   * Export Swagger/OpenAPI spec to PDF using RapiPDF
+   * Export Swagger/OpenAPI spec to PDF using native browser print (which supports CJK natively)
    */
   exportSwaggerPDF(projectName, activeFile, spec) {
-    import('rapipdf/dist/rapipdf-min.js').then(() => {
-      if (!spec) {
-        alert('Could not resolve spec to export.');
-        return;
-      }
-
-      const rapiPdf = document.createElement('rapi-pdf');
-      rapiPdf.style.display = 'none';
-      document.body.appendChild(rapiPdf);
-      
-      setTimeout(() => {
-        const originalWindowOpen = window.open;
-        let intercepted = false;
-
-        window.open = function(url, target, features) {
-          const mockWin = {
-            location: {
-              set href(val) {
-                if (val && val.startsWith('blob:')) {
-                  intercepted = true;
-                  const a = document.createElement('a');
-                  a.href = val;
-                  const filename = getExportFilename(projectName, activeFile, '-preview.pdf');
-                  a.download = filename;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-
-                  window.open = originalWindowOpen;
-                  rapiPdf.remove();
-                }
-              }
-            }
-          };
-          return mockWin;
-        };
-
-        try {
-          const sanitizedSpec = sanitizeSpec(JSON.parse(JSON.stringify(spec)));
-          rapiPdf.generatePdf(sanitizedSpec);
-        } catch (err) {
-          console.error('RapiPDF generation failed:', err);
-          alert('PDF generation failed: ' + err.message);
-          window.open = originalWindowOpen;
-        }
-
-        setTimeout(() => {
-          if (!intercepted) {
-            window.open = originalWindowOpen;
-            rapiPdf.remove();
-          }
-        }, 30000);
-      }, 100);
-    });
+    // We reuse exportDocumentPDF which triggers window.print().
+    // This perfectly handles CJK fonts natively using the browser's print engine
+    // and correctly applies the @media print styles defined in main.css for Swagger UI.
+    this.exportDocumentPDF(projectName, activeFile, 'swagger');
   },
 
   /**
