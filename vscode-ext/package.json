@@ -1,6 +1,6 @@
 {
-  "name": "@doctheatre/vscode-ext",
-  "displayName": "DocTheatre",
+  "name": "@spectre/vscode-ext",
+  "displayName": "Spectre",
   "description": "Preview Markdown, PlantUML, Mermaid diagrams, and OpenAPI specs directly in VS Code with syntax highlighting, zoom, and export.",
   "version": "0.0.5",
   "publisher": "a-chhiong",
@@ -22,7 +22,7 @@
     "diagram"
   ],
   "activationEvents": [
-    "onCommand:doctheatre.openPreview",
+    "onCommand:spectre.openPreview",
     "onLanguage:mermaid",
     "onLanguage:plantuml",
     "onLanguage:dbml"
@@ -92,33 +92,33 @@
     ],
     "commands": [
       {
-        "command": "doctheatre.openPreview",
-        "title": "DocTheatre: Open Preview",
+        "command": "spectre.openPreview",
+        "title": "Spectre: Open Preview",
         "icon": "$(preview)"
       },
       {
-        "command": "doctheatre.exportSVG",
-        "title": "DocTheatre: Export as SVG",
+        "command": "spectre.exportSVG",
+        "title": "Spectre: Export as SVG",
         "icon": "$(file-code)"
       },
       {
-        "command": "doctheatre.exportPNG",
-        "title": "DocTheatre: Export as PNG",
+        "command": "spectre.exportPNG",
+        "title": "Spectre: Export as PNG",
         "icon": "$(file-media)"
       },
       {
-        "command": "doctheatre.exportHTML",
-        "title": "DocTheatre: Export as HTML",
+        "command": "spectre.exportHTML",
+        "title": "Spectre: Export as HTML",
         "icon": "$(globe)"
       },
       {
-        "command": "doctheatre.exportPDF",
-        "title": "DocTheatre: Export as PDF",
+        "command": "spectre.exportPDF",
+        "title": "Spectre: Export as PDF",
         "icon": "$(file-pdf)"
       },
       {
-        "command": "doctheatre.toggleTheme",
-        "title": "DocTheatre: Toggle Preview Theme",
+        "command": "spectre.toggleTheme",
+        "title": "Spectre: Toggle Preview Theme",
         "icon": "$(color-mode)"
       }
     ],
@@ -129,57 +129,57 @@
     "menus": {
       "editor/title": [
         {
-          "command": "doctheatre.openPreview",
+          "command": "spectre.openPreview",
           "when": "resourceExtname =~ /^\\.(md|markdown|puml|plantuml|pu|mmd|mermaid|yaml|yml|json|dbml)$/",
           "group": "navigation@1"
         },
         {
-          "command": "doctheatre.exportSVG",
-          "when": "doctheatre.previewActive && doctheatre.contentType =~ /^(plantuml|mermaid)$/",
-          "group": "doctheatre.export@1"
+          "command": "spectre.exportSVG",
+          "when": "spectre.previewActive && spectre.contentType =~ /^(plantuml|mermaid)$/",
+          "group": "spectre.export@1"
         },
         {
-          "command": "doctheatre.exportPNG",
-          "when": "doctheatre.previewActive && doctheatre.contentType =~ /^(plantuml|mermaid)$/",
-          "group": "doctheatre.export@2"
+          "command": "spectre.exportPNG",
+          "when": "spectre.previewActive && spectre.contentType =~ /^(plantuml|mermaid)$/",
+          "group": "spectre.export@2"
         },
         {
-          "command": "doctheatre.exportHTML",
-          "when": "doctheatre.previewActive",
-          "group": "doctheatre.export@3"
+          "command": "spectre.exportHTML",
+          "when": "spectre.previewActive",
+          "group": "spectre.export@3"
         },
         {
-          "command": "doctheatre.exportPDF",
-          "when": "doctheatre.previewActive",
-          "group": "doctheatre.export@4"
+          "command": "spectre.exportPDF",
+          "when": "spectre.previewActive",
+          "group": "spectre.export@4"
         }
       ],
       "commandPalette": [
         {
-          "command": "doctheatre.exportSVG",
-          "when": "doctheatre.previewActive"
+          "command": "spectre.exportSVG",
+          "when": "spectre.previewActive"
         },
         {
-          "command": "doctheatre.exportPNG",
-          "when": "doctheatre.previewActive"
+          "command": "spectre.exportPNG",
+          "when": "spectre.previewActive"
         },
         {
-          "command": "doctheatre.exportHTML",
-          "when": "doctheatre.previewActive"
+          "command": "spectre.exportHTML",
+          "when": "spectre.previewActive"
         },
         {
-          "command": "doctheatre.exportPDF",
-          "when": "doctheatre.previewActive"
+          "command": "spectre.exportPDF",
+          "when": "spectre.previewActive"
         },
         {
-          "command": "doctheatre.toggleTheme",
-          "when": "doctheatre.previewActive"
+          "command": "spectre.toggleTheme",
+          "when": "spectre.previewActive"
         }
       ]
     },
     "keybindings": [
       {
-        "command": "doctheatre.openPreview",
+        "command": "spectre.openPreview",
         "key": "ctrl+shift+v",
         "mac": "cmd+shift+v",
         "when": "resourceExtname =~ /^\\.(md|markdown|puml|plantuml|pu|mmd|mermaid|yaml|yml|json|dbml)$/"
@@ -207,7 +207,7 @@
   },
   "dependencies": {
     "@dbml/core": "^8.3.0",
-    "@doctheatre/core": "*",
+    "@spectre/core": "*",
     "@lit/context": "^1.1.0",
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "highlight.js": "^11.11.1",

@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm: build-vscode-ext",
+      "type": "shell",
+      "command": "npm run build",
+      "options": {
+        "cwd": "${workspaceFolder}/vscode-ext"
+      },
+      "problemMatcher": [],
+      "detail": "node esbuild.config.mjs"
+    },
+    {
+      "label": "npm: watch-vscode-ext",
+      "type": "shell",
+      "command": "npm run watch",
+      "options": {
+        "cwd": "${workspaceFolder}/vscode-ext"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "detail": "node esbuild.config.mjs --watch"
+    }
+  ]
+}

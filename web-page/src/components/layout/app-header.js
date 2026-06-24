@@ -191,9 +191,9 @@ export class AppHeader extends LitElement {
     return html`
       <div class="brand">
         <div class="logo">
-          <img src="${import.meta.env.BASE_URL}icon.png" alt="DocTheatre Logo" />
+          <img src="${import.meta.env.BASE_URL}icon.png" alt="Spectre Logo" />
         </div>
-        <div class="title">DocTheatre</div>
+        <div class="title">Spectre</div>
       </div>
 
       <div class="controls">

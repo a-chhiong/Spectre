@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   DocTheatre Webview — Preview Styles
+   Spectre Webview — Preview Styles
    Two independent themes: light (default) and dark.
    Toggled by html[data-theme="dark"] — NOT tied to VS Code's color theme.
    VS Code chrome variables (--vscode-*) only used for panel background/scrollbars.

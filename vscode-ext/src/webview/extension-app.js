@@ -1,13 +1,13 @@
 import { LitElement, html, css } from 'lit';
 import { ContextProvider } from '@lit/context';
-import { WorkspaceContext } from '@doctheatre/core/context/workspace-context.js';
+import { WorkspaceContext } from '@spectre/core/context/workspace-context.js';
 import { provideVSCodeDesignSystem, vsCodeButton, vsCodeDropdown, vsCodeOption } from '@vscode/webview-ui-toolkit';
 
 // Import core viewer components
-import '@doctheatre/core/components/markdown-viewer.js';
-import '@doctheatre/core/components/dbml-viewer.js';
-import '@doctheatre/core/components/diagram-viewer.js';
-import '@doctheatre/core/components/swagger-viewer.js';
+import '@spectre/core/components/markdown-viewer.js';
+import '@spectre/core/components/dbml-viewer.js';
+import '@spectre/core/components/diagram-viewer.js';
+import '@spectre/core/components/swagger-viewer.js';
 
 // Register VS Code UI Toolkit components
 provideVSCodeDesignSystem().register(vsCodeButton(), vsCodeDropdown(), vsCodeOption());
@@ -126,7 +126,7 @@ export class ExtensionApp extends LitElement {
   }
 
   render() {
-    const filename = this.activeFile ? this.activeFile.path.split(/[\\/]/).pop() : 'DocTheatre';
+    const filename = this.activeFile ? this.activeFile.path.split(/[\\/]/).pop() : 'Spectre';
 
     return html`
       <div class="os-toolbar">

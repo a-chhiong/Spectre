@@ -12,4 +12,4 @@ import { createContext } from '@lit/context';
  *   theme$: BehaviorSubject<'light' | 'dark'>
  * }
  */
-export const WorkspaceContext = createContext('doctheatre-workspace-state');
+export const WorkspaceContext = createContext('spectre-workspace-state');

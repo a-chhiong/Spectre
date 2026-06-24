@@ -1,5 +1,5 @@
 import { projectManager } from '../../services/project-manager.js';
-import { resolverService } from '@doctheatre/core/utils/spec-resolver.js';
+import { resolverService } from '@spectre/core/utils/spec-resolver.js';
 import { exporterService } from '../../utils/file-exporter.js';
 
 /**

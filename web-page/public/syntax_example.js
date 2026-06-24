@@ -1,7 +1,7 @@
 // Basic templates for new projects
 export const DEFAULT_YAML = `openapi: 3.0.3
 info:
-  title: DocTheatre API
+  title: Spectre API
   description: 
     $ref: "../markdown/description.md"
   version: 1.0.0
@@ -40,9 +40,9 @@ properties:
     format: email
 `;
 
-export const DEFAULT_MD = `# DocTheatre Project Documentation
+export const DEFAULT_MD = `# Spectre Project Documentation
 
-Welcome to your **DocTheatre** project. This Markdown file serves as supporting documentation.
+Welcome to your **Spectre** project. This Markdown file serves as supporting documentation.
 
 ## Diagram Example (Mermaid)
 
@@ -69,7 +69,7 @@ Here is a component diagram imported from a standalone PlantUML file:
 \`\`\`plantuml
 @startuml
 actor User
-boundary "DocTheatre" as Studio
+boundary "Spectre" as Studio
 control "Project State" as State
 
 User -> Studio : Edit Files
@@ -90,7 +90,7 @@ export const DEFAULT_MERMAID = `sequenceDiagram
 
 export const DEFAULT_PLANTUML = `@startuml
 actor User
-boundary "DocTheatre" as Studio
+boundary "Spectre" as Studio
 control "Project State" as State
 
 User -> Studio : Edit Files

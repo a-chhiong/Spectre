@@ -1,4 +1,4 @@
-<h1 align="center">DocTheatre Web Workspace</h1>
+<h1 align="center">Spectre Web Workspace</h1>
 
 <p align="center">
   <strong>A powerful, browser-based API & Documentation workspace powered by Lit, CodeMirror, and Vite.</strong>
@@ -6,7 +6,7 @@
 
 ---
 
-**DocTheatre Web Workspace** is the standalone web-based counterpart to the DocTheatre VS Code extension. It provides a full IDE-like experience in the browser with a split-pane layout, robust file management, and instant live previews for Markdown, OpenAPI specifications, and Diagrams.
+**Spectre Web Workspace** is the standalone web-based counterpart to the Spectre VS Code extension. It provides a full IDE-like experience in the browser with a split-pane layout, robust file management, and instant live previews for Markdown, OpenAPI specifications, and Diagrams.
 
 ## ✨ Features
 

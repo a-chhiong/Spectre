@@ -35,7 +35,7 @@ export function resolveDbml(filePath: string): { payload: DbmlTreePayload; rawCo
 
     return { payload, rawContent: content };
   } catch (err) {
-    console.error(`[DocTheatre] Failed to parse DBML:`, err);
+    console.error(`[Spectre] Failed to parse DBML:`, err);
     return { payload: { schemas: [] }, rawContent: content };
   }
 }

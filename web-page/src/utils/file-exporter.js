@@ -1,6 +1,6 @@
 import variablesCss from '../styles/variables.css?raw';
-import markdownCss from '@doctheatre/core/components/markdown-viewer.css?raw';
-import dbdocsCss from '@doctheatre/core/components/dbml-viewer.css?raw';
+import markdownCss from '@spectre/core/components/markdown-viewer.css?raw';
+import dbdocsCss from '@spectre/core/components/dbml-viewer.css?raw';
 
 /**
  * Helper: Download a blob as a file in the browser
@@ -35,7 +35,7 @@ export function getExportFilename(projectName, activeFile, suffix, scope = null)
   return `${cleanProjName}${suffix}`;
 }
 
-import { sanitizeSpec } from '@doctheatre/core/utils/spec-resolver.js';
+import { sanitizeSpec } from '@spectre/core/utils/spec-resolver.js';
 
 /**
  * Convert SVG to Canvas for PNG export

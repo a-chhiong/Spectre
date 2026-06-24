@@ -22,7 +22,7 @@ interface ExportMessage {
 
 export class PreviewPanel {
   public static current: PreviewPanel | undefined;
-  private static readonly viewType = 'doctheatre.preview';
+  private static readonly viewType = 'spectre.preview';
 
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
@@ -51,7 +51,7 @@ export class PreviewPanel {
 
     const panel = vscode.window.createWebviewPanel(
       PreviewPanel.viewType,
-      'DocTheatre Preview',
+      'Spectre Preview',
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       {
         enableScripts: true,
@@ -68,7 +68,7 @@ export class PreviewPanel {
 
   public static triggerExport(format: ExportFormat): void {
     if (!PreviewPanel.current) {
-      vscode.window.showWarningMessage('DocTheatre: No preview panel is open.');
+      vscode.window.showWarningMessage('Spectre: No preview panel is open.');
       return;
     }
     PreviewPanel.current._panel.webview.postMessage({ type: 'trigger-export', format });
@@ -153,8 +153,8 @@ export class PreviewPanel {
     this._currentContentType = contentType;
 
     // Update VS Code context keys for menu visibility
-    vscode.commands.executeCommand('setContext', 'doctheatre.previewActive', true);
-    vscode.commands.executeCommand('setContext', 'doctheatre.contentType', contentType);
+    vscode.commands.executeCommand('setContext', 'spectre.previewActive', true);
+    vscode.commands.executeCommand('setContext', 'spectre.contentType', contentType);
 
     let content = doc.getText();
     if (contentType === 'markdown') {
@@ -224,7 +224,7 @@ export class PreviewPanel {
       }
 
       case 'error':
-        console.error('[DocTheatre webview error]', msg.message);
+        console.error('[Spectre webview error]', msg.message);
         break;
 
       // ── Export messages ───────────────────────────────────────────────────────
@@ -276,7 +276,7 @@ export class PreviewPanel {
     }
 
     await vscode.workspace.fs.writeFile(saveUri, buffer);
-    vscode.window.showInformationMessage(`DocTheatre: Saved to ${saveUri.fsPath}`);
+    vscode.window.showInformationMessage(`Spectre: Saved to ${saveUri.fsPath}`);
   }
 
   // ── HTML shell ───────────────────────────────────────────────────────────────
@@ -322,7 +322,7 @@ export class PreviewPanel {
              img-src ${webview.cspSource} data: blob: https://unpkg.com;
              font-src ${webview.cspSource} https://fonts.gstatic.com https://unpkg.com;
              connect-src ${webview.cspSource} blob:;">
-  <title>DocTheatre Preview</title>
+  <title>Spectre Preview</title>
   <link rel="stylesheet" href="${cssUri}">
   <script nonce="${nonce}">
     window.__ASSETS__ = {
@@ -344,7 +344,7 @@ export class PreviewPanel {
 
   public dispose(): void {
     PreviewPanel.current = undefined;
-    vscode.commands.executeCommand('setContext', 'doctheatre.previewActive', false);
+    vscode.commands.executeCommand('setContext', 'spectre.previewActive', false);
     this._panel.dispose();
     this._disposables.forEach(d => d.dispose());
     this._disposables = [];

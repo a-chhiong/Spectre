@@ -1,4 +1,4 @@
-<h1 align="center">DocTheatre Previewer</h1>
+<h1 align="center">Spectre Previewer</h1>
 
 <p align="center">
   <strong>The all-in-one preview companion for Markdown, PlantUML, Mermaid, and OpenAPI specs.</strong>
@@ -6,7 +6,7 @@
 
 ---
 
-**DocTheatre Previewer** is a rich, lightweight Visual Studio Code extension that provides an instantly responsive live preview for various technical documentation and diagram formats. Instead of juggling multiple disjointed extensions, DocTheatre brings a unified, elegant previewing experience to your technical documents.
+**Spectre Previewer** is a rich, lightweight Visual Studio Code extension that provides an instantly responsive live preview for various technical documentation and diagram formats. Instead of juggling multiple disjointed extensions, Spectre brings a unified, elegant previewing experience to your technical documents.
 
 ## ✨ Features
 
@@ -16,7 +16,7 @@
 - **OpenAPI / Swagger (`.yaml`, `.yml`, `.json`)**: Live interactive Swagger UI generated automatically when parsing OpenAPI specs. Supports **multi-file specs** by automatically resolving and inlining external `$ref` pointers.
 
 ### 🎨 Native Syntax Highlighting out-of-the-box
-No need to install third-party plugins. DocTheatre includes native **VS Code TextMate grammars** directly from the community's official Mermaid and PlantUML language repositories. 
+No need to install third-party plugins. Spectre includes native **VS Code TextMate grammars** directly from the community's official Mermaid and PlantUML language repositories. 
 - You get rich, accurate syntax coloring for all your diagram files instantly.
 - Code blocks inside markdown (` ```plantuml `) are also syntax highlighted automatically.
 - `$ref` paths inside your `.yaml` and `.json` files become native clickable links in the editor that jump you right into the referenced file.
@@ -38,8 +38,8 @@ With a single click on the preview toolbar, you can export your rendered markdow
 ## 🚀 Usage
 
 There are two primary ways to open a preview:
-1. **Editor Toolbar**: Click the DocTheatre "Preview" icon in the top right of your text editor when a supported file is active.
-2. **Command Palette**: Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac), and type `DocTheatre: Open Preview`.
+1. **Editor Toolbar**: Click the Spectre "Preview" icon in the top right of your text editor when a supported file is active.
+2. **Command Palette**: Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac), and type `Spectre: Open Preview`.
 3. **Keyboard Shortcut**: Use the shortcut `Ctrl+Shift+V` (`Cmd+Shift+V` on Mac).
 
 *Note: Previews automatically update as you type and follow your editor's dark/light theme dynamically.*
@@ -74,7 +74,7 @@ To package the extension into a `.vsix` file for local distribution or manual in
 npm run build
 npm run package
 ```
-A file named **`doctheatre-x.x.x.vsix`** will be created in the root directory.
+A file named **`spectre-x.x.x.vsix`** will be created in the root directory.
 
 ---
 

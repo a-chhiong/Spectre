@@ -17,7 +17,7 @@ export function preprocessOpenApiRefs(rawContent: string, basePath: string): str
     return JSON.stringify(resolved);
   } catch (err: any) {
     // On any error return the raw text — the webview can surface the parse error
-    console.error('[DocTheatre] OpenAPI $ref preprocessing failed:', err.message);
+    console.error('[Spectre] OpenAPI $ref preprocessing failed:', err.message);
     return rawContent;
   }
 }
@@ -58,7 +58,7 @@ export function resolveRefNode(node: unknown, baseDir: string, visited: Set<stri
       }
 
       if (!fs.existsSync(resolvedPath)) {
-        console.warn(`[DocTheatre] $ref file not found: ${resolvedPath}`);
+        console.warn(`[Spectre] $ref file not found: ${resolvedPath}`);
         return obj; // leave unresolved, Swagger UI will report the error
       }
 
@@ -96,7 +96,7 @@ export function resolveRefNode(node: unknown, baseDir: string, visited: Set<stri
 
         return inlined;
       } catch (err: any) {
-        console.error(`[DocTheatre] Failed to inline $ref "${ref}": ${err.message}`);
+        console.error(`[Spectre] Failed to inline $ref "${ref}": ${err.message}`);
         return obj;
       }
     }

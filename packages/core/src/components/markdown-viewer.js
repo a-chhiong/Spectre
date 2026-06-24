@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
-import { renderDiagrams } from '@doctheatre/core/utils/diagram-processor.js';
+import { renderDiagrams } from '@spectre/core/utils/diagram-processor.js';
 import './markdown-viewer.css';
 
 /**

@@ -7,38 +7,38 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // ── Open / toggle preview panel ─────────────────────────────────────────────
   context.subscriptions.push(
-    vscode.commands.registerCommand('doctheatre.openPreview', () => {
+    vscode.commands.registerCommand('spectre.openPreview', () => {
       PreviewPanel.createOrShow(extensionUri);
     })
   );
 
   // ── Export commands ─────────────────────────────────────────────────────────
   context.subscriptions.push(
-    vscode.commands.registerCommand('doctheatre.exportSVG', () => {
+    vscode.commands.registerCommand('spectre.exportSVG', () => {
       PreviewPanel.triggerExport('svg');
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('doctheatre.exportPNG', () => {
+    vscode.commands.registerCommand('spectre.exportPNG', () => {
       PreviewPanel.triggerExport('png');
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('doctheatre.exportHTML', () => {
+    vscode.commands.registerCommand('spectre.exportHTML', () => {
       PreviewPanel.triggerExport('html');
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('doctheatre.exportPDF', () => {
+    vscode.commands.registerCommand('spectre.exportPDF', () => {
       PreviewPanel.triggerExport('pdf');
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('doctheatre.toggleTheme', () => {
+    vscode.commands.registerCommand('spectre.toggleTheme', () => {
       if (PreviewPanel.current) {
         PreviewPanel.current.toggleTheme();
       }

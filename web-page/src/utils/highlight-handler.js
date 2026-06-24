@@ -348,11 +348,11 @@ const codeLanguages = [
 export { codeLanguages };
 
 // ─────────────────────────────────────────────────────────
-//  6. DOCTHEATRE EDITOR THEME (CodeMirror chrome)
+//  6. SPECTRE EDITOR THEME (CodeMirror chrome)
 // ─────────────────────────────────────────────────────────
 /**
  * An EditorView.theme() that maps CodeMirror's visual chrome (gutters,
- * active line, cursor, selection) to DocTheatre's CSS custom properties.
+ * active line, cursor, selection) to Spectre's CSS custom properties.
  *
  * This ensures the editor's UI matches the app's light/dark theme without
  * hardcoded colors.
@@ -400,7 +400,7 @@ export { specStudioEditorTheme };
 //  7. SYNTAX HIGHLIGHT STYLE (maps lezer tags → CSS vars)
 // ─────────────────────────────────────────────────────────
 /**
- * A HighlightStyle that maps each @lezer/highlight tag to a DocTheatre
+ * A HighlightStyle that maps each @lezer/highlight tag to a Spectre
  * --syntax-* CSS custom property.
  *
  * This is the bridge between CodeMirror's token classification (keyword,

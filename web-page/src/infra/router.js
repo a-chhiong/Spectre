@@ -1,5 +1,5 @@
 /**
- * Dedicated Routing Service for DocTheatre
+ * Dedicated Routing Service for Spectre
  * Synchronizes URL hash state with ProjectManager state
  */
 export class RouterService {
