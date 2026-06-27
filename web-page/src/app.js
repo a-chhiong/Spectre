@@ -3,24 +3,6 @@ import { ContextProvider } from '@lit/context';
 import { WorkspaceContext } from '@spectre/core/context/workspace-context.js';
 import { projectManager } from './services/project-manager.js';
 
-// Styles imports
-import './styles/main.css';
-import 'swagger-ui-dist/swagger-ui.css';
-
-// Components imports
-import './components/layout/workspace-layout.js';
-import './components/layout/app-header.js';
-import './components/folder/folder-tree.js';
-import './components/editor/tab-bar.js';
-import './components/editor/code-editor.js';
-import './components/viewer/code-viewer.js';
-import '@spectre/core/components/markdown-viewer.js';
-import './components/viewer/tool-bar.js';
-import '@spectre/core/components/diagram-viewer.js';
-import './components/layout/menu-dropdown.js';
-import './components/layout/panel-toggles.js';
-import './components/common/app-dialog.js';
-
 export class AppRoot extends LitElement {
   static properties = {
     treeVisible: { type: Boolean },
@@ -210,5 +192,4 @@ export class AppRoot extends LitElement {
     `;
   }
 }
-
 customElements.define('app-root', AppRoot);

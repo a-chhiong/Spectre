@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { projectManager } from '../../services/project-manager.js';
+import { projectManager } from '../services/project-manager.js';
 
 export class MenuDropdown extends LitElement {
   static properties = {

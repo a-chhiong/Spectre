@@ -439,5 +439,4 @@ export class WorkspaceLayout extends LitElement {
     `;
   }
 }
-
 customElements.define('workspace-layout', WorkspaceLayout);
