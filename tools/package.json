@@ -1,0 +1,12 @@
+{
+  "name": "@spectre/tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:tokens": "node token-parity-test.mjs"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "shiki": "^3.4.2"
+  }
+}

@@ -1,0 +1,337 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "DBML",
+  "scopeName": "source.dbml",
+  "patterns": [
+    {
+      "include": "#brackets"
+    },
+    {
+      "include": "#delimiters"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#diagramview-block"
+    },
+    {
+      "include": "#records-block"
+    },
+    {
+      "include": "#common"
+    }
+  ],
+  "repository": {
+    "diagramview-block": {
+      "begin": "(?i)\\b(DiagramView)\\b\\s+(?:\"([^\"]+)\"|([\\p{L}0-9_]+))?\\s*\\{",
+      "end": "\\}",
+      "name": "meta.diagramview.dbml",
+      "beginCaptures": {
+        "1": { "name": "keyword.type.dbml" },
+        "2": { "name": "entity.name.dbml" },
+        "3": { "name": "entity.name.dbml" }
+      },
+      "patterns": [
+        {
+          "match": "(?i)\\b(Tables|TableGroups|Schemas|Notes)\\b",
+          "name": "keyword.type.dbml"
+        },
+        {
+          "include": "#brackets"
+        },
+        {
+          "include": "#common"
+        }
+      ]
+    },
+    "records-block": {
+      "begin": "(?i)\\b(Records)\\b",
+      "end": "\\}",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.type.dbml"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#strings"
+        },
+        {
+          "include": "#numbers"
+        },
+        {
+          "include": "#comments"
+        }
+      ]
+    },
+    "brackets": {
+      "patterns": [
+        {
+          "match": "[{}\\[\\]\\(\\)]",
+          "name": "punctuation.definition.bracket.dbml"
+        }
+      ]
+    },
+    "delimiters": {
+      "patterns": [
+        {
+          "match": "[,.:]",
+          "name": "punctuation.separator.dbml"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "match": "[<>-]",
+          "name": "keyword.operator.dbml"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "0[xX][0-9a-fA-F]+",
+          "name": "constant.numeric.hex.dbml"
+        },
+        {
+          "match": "\\$[+-]*\\d*(?:\\.\\d*)?",
+          "name": "constant.numeric.dbml"
+        },
+        {
+          "match": "(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?",
+          "name": "constant.numeric.dbml"
+        },
+        {
+          "match": "#([0-9A-F]{3}){1,2}",
+          "name": "constant.numeric.hex.dbml"
+        }
+      ]
+    },
+    "common": {
+      "patterns": [
+        {
+          "include": "#whitespace"
+        },
+        {
+          "include": "#operators"
+        },
+        {
+          "include": "#strings"
+        },
+        {
+          "include": "#identifier-pairs"
+        },
+        {
+          "include": "#single-identifiers"
+        }
+      ]
+    },
+    "whitespace": {
+      "patterns": [
+        {
+          "match": "[ \\t\\r\\n]+",
+          "name": ""
+        },
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#triple-quoted-strings"
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "begin": "/\\*",
+          "end": "\\*/",
+          "name": "comment.block.dbml",
+          "patterns": [
+            {
+              "match": "[^/*]+",
+              "name": "comment.block.dbml"
+            },
+            {
+              "match": "[/*]",
+              "name": "comment.block.dbml"
+            }
+          ]
+        },
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-slash.dbml"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "begin": "\"",
+          "end": "\"",
+          "name": "string.quoted.double.dbml",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.dbml"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.dbml"
+            }
+          },
+          "patterns": [
+            {
+              "match": "\\\\[abfnrtv\\\\\"']|\\\\x[0-9A-Fa-f]{1,4}|\\\\u[0-9A-Fa-f]{4}|\\\\U[0-9A-Fa-f]{8}",
+              "name": "constant.character.escape.dbml"
+            },
+            {
+              "match": "\\\\.",
+              "name": "invalid.illegal.escape.dbml"
+            }
+          ]
+        },
+        {
+          "begin": "'",
+          "end": "'",
+          "name": "string.quoted.single.dbml",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.dbml"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.dbml"
+            }
+          },
+          "patterns": [
+            {
+              "match": "\\\\[abfnrtv\\\\\"']|\\\\x[0-9A-Fa-f]{1,4}|\\\\u[0-9A-Fa-f]{4}|\\\\U[0-9A-Fa-f]{8}",
+              "name": "constant.character.escape.dbml"
+            },
+            {
+              "match": "\\\\.",
+              "name": "invalid.illegal.escape.dbml"
+            }
+          ]
+        },
+        {
+          "begin": "`",
+          "end": "`",
+          "name": "string.quoted.backtick.dbml",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.dbml"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.dbml"
+            }
+          },
+          "patterns": [
+            {
+              "match": "\\\\[abfnrtv\\\\\"']|\\\\x[0-9A-Fa-f]{1,4}|\\\\u[0-9A-Fa-f]{4}|\\\\U[0-9A-Fa-f]{8}",
+              "name": "constant.character.escape.dbml"
+            }
+          ]
+        }
+      ]
+    },
+    "triple-quoted-strings": {
+      "patterns": [
+        {
+          "begin": "'''",
+          "end": "(?:.*[^\\\\])?(?:\\\\\\\\)*'''",
+          "name": "string.quoted.triple.dbml",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.dbml"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.dbml"
+            }
+          },
+          "patterns": [
+            {
+              "match": "\\\\'",
+              "name": "constant.character.escape.dbml"
+            }
+          ]
+        }
+      ]
+    },
+    "identifier-pairs": {
+      "patterns": [
+        {
+          "match": "(?i)\\b(project|tablegroup|table|enum|ref|note|tablepartial)\\s+([\\p{L}0-9_]+)",
+          "captures": {
+            "1": {
+              "name": "keyword.type.dbml"
+            },
+            "2": {
+              "name": "entity.name.dbml"
+            }
+          }
+        },
+        {
+          "match": "(?i)\\b(not)\\s+(null)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.type.dbml"
+            },
+            "2": {
+              "name": "keyword.type.dbml"
+            }
+          }
+        },
+        {
+          "match": "(?i)\\b(not)\\s+([\\p{L}0-9_]+(?:\\.[\\p{L}0-9_]+)*)\\b",
+          "captures": {
+            "1": {
+              "name": "entity.name.dbml"
+            },
+            "2": {
+              "name": "entity.name.dbml"
+            }
+          }
+        },
+        {
+          "match": "(?i)\\b(?!(?:project|tablegroup|table|enum|ref|note|tablepartial|diagramview|not|TINYINT|SMALLINT|MEDIUMINT|INT|BIGINT|FLOAT|DOUBLE|DECIMAL|DEC|BIT|BOOL|REAL|MONEY|BINARY_FLOAT|BINARY_DOUBLE|smallmoney|ENUM|CHAR|BINARY|VARCHAR|VARBINARY|TINYBLOB|TINYTEXT|BLOB|TEXT|MEDIUMBLOB|MEDIUMTEXT|LONGBLOB|LONGTEXT|SET|INET6|UUID|NVARCHAR|NCHAR|NTEXT|IMAGE|VARCHAR2|NVARCHAR2|DATE|TIME|DATETIME|DATETIME2|TIMESTAMP|YEAR|smalldatetime|datetimeoffset|XML|sql_variant|uniqueidentifier|CURSOR|BFILE|CLOB|NCLOB|RAW|indexes|headercolor|pk|null|increment|unique|default|primary|key|name|as|color)\\b)([\\p{L}0-9_]+)\\s+([\\p{L}0-9_]+(?:\\.[\\p{L}0-9_]+)*)\\b",
+          "captures": {
+            "1": {
+              "name": "entity.name.dbml"
+            },
+            "2": {
+              "name": "keyword.type.dbml"
+            }
+          }
+        }
+      ]
+    },
+    "single-identifiers": {
+      "patterns": [
+        {
+          "match": "(?i)\\b(TINYINT|SMALLINT|MEDIUMINT|INT|BIGINT|FLOAT|DOUBLE|DECIMAL|DEC|BIT|BOOL|REAL|MONEY|BINARY_FLOAT|BINARY_DOUBLE|smallmoney|ENUM|CHAR|BINARY|VARCHAR|VARBINARY|TINYBLOB|TINYTEXT|BLOB|TEXT|MEDIUMBLOB|MEDIUMTEXT|LONGBLOB|LONGTEXT|SET|INET6|UUID|NVARCHAR|NCHAR|NTEXT|IMAGE|VARCHAR2|NVARCHAR2|DATE|TIME|DATETIME|DATETIME2|TIMESTAMP|YEAR|smalldatetime|datetimeoffset|XML|sql_variant|uniqueidentifier|CURSOR|BFILE|CLOB|NCLOB|RAW)\\b",
+          "name": "keyword.type.dbml"
+        },
+        {
+          "match": "(?i)\\b(project|tablegroup|table|enum|ref|note|tablepartial)\\b",
+          "name": "keyword.type.dbml"
+        },
+        {
+          "match": "(?i)\\b(indexes|ref|note|headercolor|pk|null|increment|unique|default|primary|key|name|as|color)\\b",
+          "name": "keyword.type.dbml"
+        },
+        {
+          "match": "[\\p{L}0-9_]+",
+          "name": "entity.name.dbml"
+        }
+      ]
+    }
+  }
+}

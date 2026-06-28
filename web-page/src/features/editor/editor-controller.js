@@ -12,8 +12,8 @@ import {
   mermaidSupport,
   dbmlSupport,
   codeLanguages,
-  specStudioEditorTheme,
-  specStudioHighlightStyle,
+  editorTheme,
+  highlightStyle,
   refLinkPlugin
 } from '../../utils/highlight-handler.js';
 
@@ -127,8 +127,8 @@ export class EditorController {
       autocompletion(),
       indentUnit.of("    "),
 
-      specStudioEditorTheme,
-      syntaxHighlighting(specStudioHighlightStyle),
+      editorTheme,
+      syntaxHighlighting(highlightStyle),
 
       refLinkPlugin,
       
