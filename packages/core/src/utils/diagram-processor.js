@@ -211,6 +211,9 @@ function enableMermaidInteractiveZoom(container) {
   container.appendChild(resetBtn);
 }
 
+/** Track the last mermaid theme to avoid unnecessary re-initialization */
+let _lastMermaidTheme = null;
+
 /**
  * Process HTML container to render Mermaid and PlantUML diagrams
  * @param {HTMLElement} container The DOM element containing code blocks
@@ -224,48 +227,70 @@ export async function renderDiagrams(container, isDarkMode, options = {}) {
   // ─── PART 1: RENDER MERMAID DIAGRAMS ───
   const mermaidBlocks = container.querySelectorAll('pre > code.language-mermaid');
   if (mermaidBlocks.length > 0) {
-    const nodesToProcess = [];
+    const blocksToRender = [];
 
     mermaidBlocks.forEach((codeNode) => {
       const preNode = codeNode.parentElement;
       if (preNode.getAttribute('data-processed') === 'true') return;
 
       const codeText = codeNode.textContent.trim();
-      
+
       // Create a mermaid div to replace the pre block
       const mermaidDiv = document.createElement('div');
       mermaidDiv.className = 'mermaid';
-      mermaidDiv.textContent = codeText;
-      
+
       // Replace pre with the new div
       preNode.replaceWith(mermaidDiv);
-      nodesToProcess.push(mermaidDiv);
+      blocksToRender.push({ element: mermaidDiv, code: codeText });
     });
 
-    if (nodesToProcess.length > 0) {
+    if (blocksToRender.length > 0) {
       try {
-        // Initialize mermaid with the current theme
-        mermaid.initialize({
-          startOnLoad: false,
-          theme: isDarkMode ? 'dark' : 'default',
-          securityLevel: 'loose',
-          fontFamily: 'Outfit, Inter, sans-serif'
-        });
-        
-        await mermaid.run({
-          nodes: nodesToProcess
-        });
+        const desiredTheme = isDarkMode ? 'dark' : 'default';
 
-        // Mark container as processed to avoid double compiling
-        // Optionally enable interactive zoom/pan on each rendered diagram
-        nodesToProcess.forEach(node => {
-          node.setAttribute('data-processed', 'true');
-          if (options.enableZoom) {
-            enableMermaidInteractiveZoom(node);
+        // Re-initialize mermaid if the theme has changed since the last render
+        if (_lastMermaidTheme !== desiredTheme) {
+          mermaid.initialize({
+            startOnLoad: false,
+            securityLevel: 'loose',
+            theme: desiredTheme,
+            fontFamily: 'Outfit, Inter, system-ui, -apple-system, sans-serif',
+            sequence: {
+              fontFamily: 'Outfit, Inter, system-ui, -apple-system, sans-serif',
+              actorFontFamily: 'Outfit, Inter, system-ui, -apple-system, sans-serif',
+              noteFontFamily: 'Outfit, Inter, system-ui, -apple-system, sans-serif',
+              messageFontFamily: 'Outfit, Inter, system-ui, -apple-system, sans-serif',
+            },
+          });
+          _lastMermaidTheme = desiredTheme;
+        }
+
+        for (const block of blocksToRender) {
+          const id = 'mermaid-svg-' + Math.random().toString(36).substring(2, 9);
+          try {
+            const { svg } = await mermaid.render(id, block.code);
+            block.element.innerHTML = svg;
+            block.element.setAttribute('data-processed', 'true');
+            if (options.enableZoom) {
+              enableMermaidInteractiveZoom(block.element);
+            }
+          } catch (renderErr) {
+            // Remove the temp div created by mermaid on failure
+            const tempDiv = document.getElementById('d' + id);
+            if (tempDiv) tempDiv.remove();
+
+            console.error('Error rendering Mermaid block:', renderErr);
+            const message = renderErr?.str || renderErr?.message || String(renderErr);
+            block.element.innerHTML = `
+              <div class="mermaid-error" style="color: var(--color-error, #f87171); padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                Error rendering Mermaid: ${message}
+              </div>
+            `;
+            block.element.setAttribute('data-processed', 'true');
           }
-        });
+        }
       } catch (err) {
-        console.error('Error rendering Mermaid:', err);
+        console.error('Error initializing Mermaid:', err);
       }
     }
   }

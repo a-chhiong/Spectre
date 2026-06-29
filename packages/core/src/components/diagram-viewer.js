@@ -68,7 +68,8 @@ export class DiagramViewer extends LitElement {
 
     const canvas = this.renderRoot.querySelector('.diagram-viewer-canvas');
     if (canvas) {
-      canvas.innerHTML = `<pre><code class="language-${this.type}">${this.code}</code></pre>`;
+      // Wrap diagram code inside a dedicated paper background element
+      canvas.innerHTML = `<div class="diagram-viewer-paper"><pre><code class="language-${this.type}">${this.code}</code></pre></div>`;
       canvas.style.transform = '';
       canvas.style.width = '';
       canvas.style.height = '';
@@ -77,9 +78,10 @@ export class DiagramViewer extends LitElement {
     try {
       // Import the dynamic diagram processor
       const { renderDiagrams } = await import('../utils/diagram-processor.js');
-      await renderDiagrams(canvas, this.theme === 'dark');
+      const paper = canvas ? canvas.querySelector('.diagram-viewer-paper') : null;
+      await renderDiagrams(paper, this.theme === 'dark');
 
-      const svg = canvas ? canvas.querySelector('svg') : null;
+      const svg = paper ? paper.querySelector('svg') : null;
       if (svg) {
         // Wait a frame for the SVG rendering to settle and layout dimensions to be valid
         requestAnimationFrame(() => {
@@ -87,7 +89,7 @@ export class DiagramViewer extends LitElement {
           this.loading = false;
         });
       } else {
-        const errorEl = canvas ? canvas.querySelector('.puml-error, .mermaid-error') : null;
+        const errorEl = paper ? paper.querySelector('.puml-error, .mermaid-error') : null;
         if (errorEl) {
           this.errorMessage = errorEl.textContent || 'Failed to render diagram.';
         } else {
@@ -129,23 +131,49 @@ export class DiagramViewer extends LitElement {
     if (!svg) return;
 
     // Reset styles temporarily to read native size
+    canvas.style.transform = 'none';
     canvas.style.width = '';
     canvas.style.height = '';
+
+    // Reset the paper and wrapper containers
+    const paper = canvas.querySelector('.diagram-viewer-paper');
+    if (paper) {
+      paper.style.width = '';
+      paper.style.height = '';
+    }
+    const wrapper = svg.parentElement;
+    if (wrapper && wrapper !== paper) {
+      wrapper.style.width = '';
+      wrapper.style.height = '';
+    }
+
     svg.style.width = '';
     svg.style.height = '';
+    svg.style.maxWidth = '';
+    svg.style.maxHeight = '';
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
 
-    const viewBoxAttr = svg.getAttribute('viewBox');
     let svgWidth = 0;
     let svgHeight = 0;
 
+    const viewBoxAttr = svg.getAttribute('viewBox');
     if (viewBoxAttr) {
-      const [, , w, h] = viewBoxAttr.split(' ').map(Number);
-      svgWidth = w;
-      svgHeight = h;
-    } else {
-      const rect = svg.getBoundingClientRect();
-      svgWidth = rect.width || svg.clientWidth || 800;
-      svgHeight = rect.height || svg.clientHeight || 600;
+      const parts = viewBoxAttr.split(/[\s,]+/).map(Number);
+      svgWidth = parts[2];
+      svgHeight = parts[3];
+    }
+
+    // Fallback: use intrinsic/computed dimensions
+    if (!svgWidth || !svgHeight) {
+      const bbox = svg.getBBox ? svg.getBBox() : null;
+      if (bbox && bbox.width > 0 && bbox.height > 0) {
+        svgWidth = bbox.width + bbox.x;
+        svgHeight = bbox.height + bbox.y;
+      } else {
+        svgWidth = svg.clientWidth || 800;
+        svgHeight = svg.clientHeight || 600;
+      }
     }
 
     const viewportWidth = viewport.clientWidth;
@@ -182,18 +210,25 @@ export class DiagramViewer extends LitElement {
     const svg = canvas.querySelector('svg');
     if (!svg) return;
 
-    const viewBoxAttr = svg.getAttribute('viewBox');
     let svgWidth = 0;
     let svgHeight = 0;
 
+    const viewBoxAttr = svg.getAttribute('viewBox');
     if (viewBoxAttr) {
-      const [, , w, h] = viewBoxAttr.split(' ').map(Number);
-      svgWidth = w;
-      svgHeight = h;
-    } else {
-      const rect = svg.getBoundingClientRect();
-      svgWidth = rect.width || svg.clientWidth || 800;
-      svgHeight = rect.height || svg.clientHeight || 600;
+      const parts = viewBoxAttr.split(/[\s,]+/).map(Number);
+      svgWidth = parts[2];
+      svgHeight = parts[3];
+    }
+
+    if (!svgWidth || !svgHeight) {
+      const bbox = svg.getBBox ? svg.getBBox() : null;
+      if (bbox && bbox.width > 0 && bbox.height > 0) {
+        svgWidth = bbox.width + bbox.x;
+        svgHeight = bbox.height + bbox.y;
+      } else {
+        svgWidth = svg.clientWidth || 800;
+        svgHeight = svg.clientHeight || 600;
+      }
     }
 
     const viewportWidth = viewport.clientWidth;
@@ -314,7 +349,8 @@ export class DiagramViewer extends LitElement {
 
   // Helper method to retrieve the inner SVG node for exports
   getSVGElement() {
-    return this.renderRoot.querySelector('.diagram-viewer-canvas svg');
+    return this.renderRoot.querySelector('.diagram-viewer-paper svg') ||
+           this.renderRoot.querySelector('.diagram-viewer-canvas svg');
   }
 
   render() {
