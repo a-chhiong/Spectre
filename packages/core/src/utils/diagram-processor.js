@@ -33,9 +33,16 @@ function loadPlantUMLFiles() {
     } else {
       // Load viz-global.js
       const script = document.createElement('script');
-      const baseUrl = import.meta.env.BASE_URL || '/';
-      const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-      script.src = `${cleanBase}vendor/plantuml/viz-global.js`;
+      if (window.__ASSETS__ && window.__ASSETS__.vendorBase) {
+        const base = window.__ASSETS__.vendorBase.endsWith('/')
+          ? window.__ASSETS__.vendorBase
+          : window.__ASSETS__.vendorBase + '/';
+        script.src = `${base}viz-global.js`;
+      } else {
+        const baseUrl = import.meta.env.BASE_URL || '/';
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+        script.src = `${cleanBase}vendor/plantuml/viz-global.js`;
+      }
       script.async = true;
       script.onload = () => {
         loadPlantUMLCore(resolve, reject);
@@ -58,17 +65,32 @@ function loadPlantUMLCore(resolve, reject) {
   // Bypass Vite's static import analyzer by constructing import dynamically
   const dynamicImport = new Function('m', 'return import(m)');
   
-  const baseUrl = import.meta.env.BASE_URL || '/';
-  const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-  dynamicImport(`${cleanBase}vendor/plantuml/plantuml.js`)
-    .then((module) => {
-      pumlModule = module;
-      resolve(pumlModule);
-    })
-    .catch((err) => {
-      pumlLoadingPromise = null;
-      reject(new Error('Failed to load plantuml.js module: ' + err.message));
-    });
+  if (window.__ASSETS__ && window.__ASSETS__.vendorBase) {
+    const base = window.__ASSETS__.vendorBase.endsWith('/')
+      ? window.__ASSETS__.vendorBase
+      : window.__ASSETS__.vendorBase + '/';
+    dynamicImport(`${base}plantuml.js`)
+      .then((module) => {
+        pumlModule = module;
+        resolve(pumlModule);
+      })
+      .catch((err) => {
+        pumlLoadingPromise = null;
+        reject(new Error('Failed to load plantuml.js module: ' + err.message));
+      });
+  } else {
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+    dynamicImport(`${cleanBase}vendor/plantuml/plantuml.js`)
+      .then((module) => {
+        pumlModule = module;
+        resolve(pumlModule);
+      })
+      .catch((err) => {
+        pumlLoadingPromise = null;
+        reject(new Error('Failed to load plantuml.js module: ' + err.message));
+      });
+  }
 }
 
 /**

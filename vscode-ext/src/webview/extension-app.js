@@ -1,16 +1,15 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { ContextProvider } from '@lit/context';
 import { WorkspaceContext } from '@spectre/core/context/workspace-context.js';
-import { provideVSCodeDesignSystem, vsCodeButton, vsCodeDropdown, vsCodeOption } from '@vscode/webview-ui-toolkit';
 
 // Import core viewer components
 import '@spectre/core/components/markdown-viewer.js';
 import '@spectre/core/components/dbml-viewer.js';
 import '@spectre/core/components/diagram-viewer.js';
 import '@spectre/core/components/swagger-viewer.js';
+import '@spectre/core/components/tool-bar.js';
 
-// Register VS Code UI Toolkit components
-provideVSCodeDesignSystem().register(vsCodeButton(), vsCodeDropdown(), vsCodeOption());
+import { handleExport } from './export.js';
 
 export class ExtensionApp extends LitElement {
   static properties = {
@@ -19,7 +18,8 @@ export class ExtensionApp extends LitElement {
     theme: { type: String },
     contentType: { type: String },
     viewMode: { type: String },
-    activeNodePath: { type: String }
+    activeNodePath: { type: String },
+    _dbmlBreadcrumb: { type: Object, state: true }
   };
 
   createRenderRoot() {
@@ -34,6 +34,7 @@ export class ExtensionApp extends LitElement {
     this.contentType = '';
     this.viewMode = 'document'; // doc vs erd
     this.activeNodePath = null;
+    this._dbmlBreadcrumb = null;
 
     // Create a mock projectManager to satisfy the core components that rely on WorkspaceContext
     this.mockProjectManager = {
@@ -48,17 +49,71 @@ export class ExtensionApp extends LitElement {
     new ContextProvider(this, { context: WorkspaceContext, initialValue: this.mockProjectManager });
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    this._clickHandler = (e) => {
+      const link = e.target.closest('.workspace-link');
+      if (link) {
+        e.preventDefault();
+        const refPath = link.getAttribute('data-href');
+        if (refPath && this.activeFile) {
+          const resolved = this.resolvePath(this.activeFile.path, refPath);
+          let fileExists = this.files.find(f => f.path === resolved && f.type === 'file');
+          if (!fileExists) {
+            fileExists = this.files.find(f => f.path === resolved + '.dbml' && f.type === 'file');
+          }
+          const targetPath = fileExists ? fileExists.path : resolved;
+          window.__vscode?.postMessage({ type: 'open-file', path: targetPath });
+        }
+      }
+    };
+    this.addEventListener('click', this._clickHandler);
+
+    this._openTabHandler = (e) => {
+      const { path } = e.detail;
+      if (path) {
+        window.__vscode?.postMessage({ type: 'open-file', path });
+      }
+    };
+    this.addEventListener('open-tab', this._openTabHandler);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('click', this._clickHandler);
+    this.removeEventListener('open-tab', this._openTabHandler);
+  }
+
+  resolvePath(basePath, relativePath) {
+    const baseSegments = basePath ? basePath.split('/') : [];
+    baseSegments.pop();
+    const relSegments = relativePath.split('/');
+
+    for (const seg of relSegments) {
+      if (seg === '.' || seg === '') continue;
+      if (seg === '..') {
+        if (baseSegments.length > 0) baseSegments.pop();
+      } else {
+        baseSegments.push(seg);
+      }
+    }
+    return baseSegments.join('/');
+  }
+
   handleExportSVG = () => {
-    // Custom export event handled by export.js
-    window.dispatchEvent(new CustomEvent('export-svg'));
+    handleExport('svg', this.querySelector('#preview-container'));
   };
 
   handleExportPNG = () => {
-    window.dispatchEvent(new CustomEvent('export-png'));
+    handleExport('png', this.querySelector('#preview-container'));
   };
 
   handleExportHTML = () => {
-    window.dispatchEvent(new CustomEvent('export-html'));
+    handleExport('html', this.querySelector('#preview-container'));
+  };
+
+  handleExportPDF = () => {
+    handleExport('pdf', this.querySelector('#preview-container'));
   };
 
   renderViewer() {
@@ -118,6 +173,7 @@ export class ExtensionApp extends LitElement {
           .theme=${this.theme}
           .viewMode=${this.viewMode}
           .activeEntityPath=${this.activeNodePath}
+          @breadcrumb-change=${(e) => { this._dbmlBreadcrumb = e.detail; }}
         ></dbml-viewer>
       `;
     }
@@ -129,28 +185,25 @@ export class ExtensionApp extends LitElement {
     const filename = this.activeFile ? this.activeFile.path.split(/[\\/]/).pop() : 'Spectre';
 
     return html`
-      <div class="os-toolbar">
-        <div class="os-breadcrumb" id="os-filename">
-          <span class="filename">${filename}</span>
-        </div>
-
-        ${this.contentType === 'dbml' ? html`
-          <div class="view-switcher" id="os-dbml-switcher">
-            <button 
-              class="view-switcher-btn ${this.viewMode === 'document' ? 'active' : ''}" 
-              @click=${() => this.viewMode = 'document'}
-              title="Document view">DOC</button>
-            <button 
-              class="view-switcher-btn ${this.viewMode === 'diagram' ? 'active' : ''}" 
-              @click=${() => this.viewMode = 'diagram'}
-              title="Diagram view">ERD</button>
-          </div>
-        ` : ''}
-
-        <span class="badge" id="os-badge">${this.contentType !== 'unknown' ? this.contentType : ''}</span>
-        
-        <!-- We can hook up export buttons here if needed, or rely on VS Code Command Palette -->
-      </div>
+      ${this.activeFile ? html`
+        <tool-bar
+          .filename=${filename}
+          .contentType=${this.contentType}
+          .viewMode=${this.viewMode}
+          .breadcrumb=${this._dbmlBreadcrumb}
+          @breadcrumb-navigate=${(e) => {
+            const viewer = this.querySelector('#active-dbml-viewer');
+            if (viewer && viewer.handleBreadcrumbNavigation) {
+              viewer.handleBreadcrumbNavigation(e.detail);
+            }
+          }}
+          @view-mode-change=${(e) => { this.viewMode = e.detail.mode; }}
+          @export-html=${this.handleExportHTML}
+          @export-pdf=${this.handleExportPDF}
+          @export-svg=${this.handleExportSVG}
+          @export-png=${this.handleExportPNG}
+        ></tool-bar>
+      ` : ''}
 
       <div class="os-preview" id="preview-container">
         ${this.renderViewer()}

@@ -15,7 +15,6 @@ import './features/folder/folder-header.js';
 import './features/folder/folder-tree.js';
 import './features/header/app-header.js';
 import './features/viewer/code-viewer.js';
-import './features/viewer/tool-bar.js';
 import './features/layout/workspace-layout.js';
 
 // Components imports

@@ -1,0 +1,457 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Spectre Webview — Preview Styles
+   Two independent themes: light (default) and dark.
+   Toggled by html[data-theme="dark"] — NOT tied to VS Code's color theme.
+   VS Code chrome variables (--vscode-*) only used for panel background/scrollbars.
+ ───────────────────────────────────────────────────────────────────────────── */
+
+@import './variables.css';
+
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  background: var(--vscode-editor-background, #ffffff);
+  color: var(--os-text-primary);
+  overflow: hidden;
+}
+
+/* ── Layout shell ────────────────────────────────────────────────────────── */
+#os-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--os-bg-primary);
+  color: var(--os-text-primary);
+}
+
+/* Ensure Lit custom elements don't break flex layout and scrolling */
+extension-app {
+  display: contents;
+}
+
+/* ── Scrollbars ──────────────────────────────────────────────────────────── */
+html,
+body,
+.os-preview,
+.markdown-preview pre,
+.mermaid,
+.plantuml-svg-container,
+.plantuml-preview,
+.mermaid-preview {
+  scrollbar-color: var(--os-scrollbar-thumb) var(--os-bg-primary);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--os-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--os-scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid var(--os-bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--os-scrollbar-thumb-hover);
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+.os-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  background: var(--os-toolbar-bg);
+  border-bottom: 1px solid var(--os-toolbar-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  flex-shrink: 0;
+  height: 36px;
+  user-select: none;
+  z-index: 300;
+}
+
+.filename {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--os-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+/* ── Breadcrumb ──────────────────────────────────────────────────────────── */
+.os-breadcrumb {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--os-text-secondary);
+  gap: 6px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.os-breadcrumb-item {
+  cursor: pointer;
+  color: var(--os-text-secondary);
+  transition: color 0.15s;
+}
+
+.os-breadcrumb-item:hover {
+  color: var(--os-text-primary);
+  text-decoration: underline;
+}
+
+.os-breadcrumb-item.active {
+  color: var(--os-text-primary);
+  font-weight: 600;
+  cursor: default;
+  text-decoration: none;
+}
+
+.os-breadcrumb-sep {
+  color: var(--os-border);
+  user-select: none;
+}
+
+/* ── View Switcher ───────────────────────────────────────────────────────── */
+.view-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--os-bg-tertiary);
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.view-switcher-btn {
+  background: none;
+  border: none;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--os-text-secondary);
+  cursor: pointer;
+  line-height: 1.6;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.view-switcher-btn:hover {
+  color: var(--os-text-primary);
+}
+
+.view-switcher-btn.active {
+  background: var(--os-bg-secondary);
+  color: var(--os-text-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+}
+
+.os-toolbar .badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--os-bg-tertiary);
+  color: var(--os-text-secondary);
+  white-space: nowrap;
+}
+
+.os-toolbar .badge:empty {
+  display: none;
+}
+
+/* ── Preview Area ────────────────────────────────────────────────────────── */
+.os-preview {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.os-preview.erd-mode {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.os-preview.erd-mode .mermaid {
+  flex: 1;
+  height: 100%;
+  max-height: none;
+  background: var(--os-bg-primary);
+  border: none;
+}
+
+/* ── Zoom Controls ─────────────────────────────────────────────────────────── */
+.os-zoom-controls {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  background: var(--os-bg-secondary);
+  border: 1px solid var(--os-border);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+}
+
+body.show-zoom-controls .os-zoom-controls {
+  display: flex;
+}
+
+.os-zoom-btn {
+  background: none;
+  border: none;
+  border-radius: 4px;
+  padding: 6px;
+  color: var(--os-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.os-zoom-btn:hover {
+  background: var(--os-bg-tertiary);
+  color: var(--os-text-primary);
+}
+
+.os-zoom-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+#os-zoom-reset {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0 8px;
+}
+
+.os-toolbar-btn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--os-text-secondary);
+  font-size: 14px;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.os-toolbar-btn:hover {
+  background: var(--os-bg-tertiary);
+  border-color: var(--os-border);
+  color: var(--os-text-primary);
+}
+
+/* ── Preview area ────────────────────────────────────────────────────────── */
+.os-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  padding: 0;
+}
+
+/* ── Placeholder ─────────────────────────────────────────────────────────── */
+.os-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  color: var(--os-text-secondary);
+  padding: 3rem;
+  text-align: center;
+}
+
+.os-placeholder svg {
+  opacity: 0.35;
+}
+
+.os-placeholder p {
+  font-size: 0.9rem;
+  font-style: italic;
+  max-width: 320px;
+  margin: 0;
+}
+
+/* ── Zoom reset button ──────────────────────────────────────────────────────────── */
+/* position:fixed keeps the button anchored to the viewport (not the scrolling
+   diagram content). top:46px = 36px toolbar + 10px gap; right:14px matches
+   the old absolute position at the top-right corner of the preview area. */
+.os-zoom-reset {
+  position: fixed;
+  top: 46px;
+  right: 14px;
+  background: var(--os-bg-secondary);
+  border: 1px solid var(--os-border);
+  border-radius: 6px;
+  color: var(--os-text-secondary);
+  font-size: 0.72rem;
+  font-family: inherit;
+  padding: 4px 10px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, background 0.12s, color 0.12s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+  z-index: 200;
+}
+
+.os-zoom-reset.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.os-zoom-reset:hover {
+  background: var(--os-bg-tertiary);
+  color: var(--os-text-primary);
+}
+
+/* ── Export action button ────────────────────────────────────────────────── */
+.os-export-container {
+  position: relative;
+  display: inline-block;
+}
+
+.os-export-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.os-export-menu {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  background: var(--os-bg-secondary);
+  border: 1px solid var(--os-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  min-width: 150px;
+  padding: 5px;
+  animation: os-slide-down 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 9999;
+}
+
+.os-export-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 11px;
+  background: none;
+  border: none;
+  border-radius: 7px;
+  color: var(--os-text-primary);
+  font-size: 0.78rem;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.os-export-item:hover {
+  background: var(--os-bg-tertiary);
+  color: var(--os-accent);
+}
+
+.os-export-item svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+/* ── Spinner ─────────────────────────────────────────────────────────────── */
+@keyframes os-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes os-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.os-spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--os-text-secondary);
+  font-size: 0.85rem;
+  padding: 2rem;
+}
+
+.os-spinner svg {
+  animation: os-spin 0.8s linear infinite;
+}
+
+/* ── Error ───────────────────────────────────────────────────────────────── */
+.os-error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+  margin: 1.5rem;
+}
+
+/* ── Print ───────────────────────────────────────────────────────────────── */
+@media print {
+
+  .os-toolbar,
+  .os-export-container,
+  .os-zoom-reset {
+    display: none !important;
+  }
+}

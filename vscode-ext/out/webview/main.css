@@ -1,36 +1,5 @@
-/* src/webview/styles/preview.css */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-html,
-body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    "Inter",
-    sans-serif;
-  font-size: 14px;
-  line-height: 1.6;
-  background: var(--vscode-editor-background, #ffffff);
-  color: var(--os-text-primary);
-  overflow: hidden;
-}
+/* src/webview/styles/syntax-tokens.css */
 html {
-  --os-bg-primary: #f7f8fa;
-  --os-bg-secondary: #ffffff;
-  --os-bg-tertiary: #eaedf1;
-  --os-text-primary: #1a1a2e;
-  --os-text-secondary: #555577;
-  --os-border: #d1d5db;
-  --os-accent: #0ea5e9;
-  --os-accent-hover: #0284c7;
   --syntax-keyword: #7c3aed;
   --syntax-string: #059669;
   --syntax-comment: #6b7280;
@@ -44,6 +13,33 @@ html {
   --syntax-atom: #0891b2;
   --syntax-link: #0ea5e9;
   --syntax-heading: #111827;
+}
+html[data-theme=dark] {
+  --syntax-keyword: #c084fc;
+  --syntax-string: #34d399;
+  --syntax-comment: #64748b;
+  --syntax-number: #fb923c;
+  --syntax-type: #60a5fa;
+  --syntax-meta: #e879f9;
+  --syntax-operator: #f472b6;
+  --syntax-variable: #e2e8f0;
+  --syntax-property: #60a5fa;
+  --syntax-tag: #f87171;
+  --syntax-atom: #22d3ee;
+  --syntax-link: #38bdf8;
+  --syntax-heading: #f1f5f9;
+}
+
+/* src/webview/styles/variables.css */
+html {
+  --os-bg-primary: #f7f8fa;
+  --os-bg-secondary: #ffffff;
+  --os-bg-tertiary: #eaedf1;
+  --os-text-primary: #1a1a2e;
+  --os-text-secondary: #555577;
+  --os-border: #d1d5db;
+  --os-accent: #0ea5e9;
+  --os-accent-hover: #0284c7;
   --os-toolbar-bg: rgba(255, 255, 255, 0.88);
   --os-toolbar-border: #e2e8f0;
   --os-scrollbar-thumb: #cbd5e1;
@@ -73,6 +69,8 @@ html {
   --border-radius-sm: 4px;
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
+  --tabbar-height: 36px;
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
 }
 html[data-theme=dark] {
   --os-bg-primary: #0f1117;
@@ -83,23 +81,36 @@ html[data-theme=dark] {
   --os-border: #2d3748;
   --os-accent: #38bdf8;
   --os-accent-hover: #7dd3fc;
-  --syntax-keyword: #c084fc;
-  --syntax-string: #34d399;
-  --syntax-comment: #64748b;
-  --syntax-number: #fb923c;
-  --syntax-type: #60a5fa;
-  --syntax-meta: #e879f9;
-  --syntax-operator: #f472b6;
-  --syntax-variable: #e2e8f0;
-  --syntax-property: #60a5fa;
-  --syntax-tag: #f87171;
-  --syntax-atom: #22d3ee;
-  --syntax-link: #38bdf8;
-  --syntax-heading: #f1f5f9;
   --os-toolbar-bg: rgba(15, 17, 23, 0.88);
   --os-toolbar-border: #2d3748;
   --os-scrollbar-thumb: #334155;
   --os-scrollbar-thumb-hover: #475569;
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* src/webview/styles/main.css */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Inter",
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  background: var(--vscode-editor-background, #ffffff);
+  color: var(--os-text-primary);
+  overflow: hidden;
 }
 #os-root {
   display: flex;
@@ -901,12 +912,50 @@ diagram-viewer.diagram-preview .diagram-viewer-container {
   transform-origin: 0 0;
   will-change: transform;
 }
+.diagram-viewer-paper {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  width: 100%;
+  height: 100%;
+}
+.diagram-viewer-paper svg {
+  max-width: 100%;
+  height: auto !important;
+  display: block;
+}
+[data-theme=dark] .diagram-viewer-paper {
+  background: #1e2433;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
 diagram-viewer .mermaid,
-diagram-viewer .plantuml-svg-container {
+diagram-viewer .plantuml-svg-container,
+.diagram-viewer-paper .mermaid,
+.diagram-viewer-paper .plantuml-svg-container {
   margin: 0 !important;
   padding: 0 !important;
   background: transparent !important;
   border: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  overflow: visible !important;
+}
+.diagram-viewer-paper .mermaid svg,
+.diagram-viewer-paper .plantuml-svg-container svg {
+  max-width: none !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 .diagram-viewer-controls {
   position: absolute;

@@ -1,0 +1,32 @@
+/* ── Syntax Highlighting Tokens ───────────────────────────────────────────── */
+html {
+  --syntax-keyword: #7c3aed;
+  --syntax-string: #059669;
+  --syntax-comment: #6b7280;
+  --syntax-number: #ea580c;
+  --syntax-type: #0369a1;
+  --syntax-meta: #9333ea;
+  --syntax-operator: #be185d;
+  --syntax-variable: #1a1a2e;
+  --syntax-property: #0369a1;
+  --syntax-tag: #b91c1c;
+  --syntax-atom: #0891b2;
+  --syntax-link: #0ea5e9;
+  --syntax-heading: #111827;
+}
+
+html[data-theme="dark"] {
+  --syntax-keyword: #c084fc;
+  --syntax-string: #34d399;
+  --syntax-comment: #64748b;
+  --syntax-number: #fb923c;
+  --syntax-type: #60a5fa;
+  --syntax-meta: #e879f9;
+  --syntax-operator: #f472b6;
+  --syntax-variable: #e2e8f0;
+  --syntax-property: #60a5fa;
+  --syntax-tag: #f87171;
+  --syntax-atom: #22d3ee;
+  --syntax-link: #38bdf8;
+  --syntax-heading: #f1f5f9;
+}

@@ -1,7 +1,7 @@
 // ─── Webview Entry Point ──────────────────────────────────────────────────────
 // Wires the VS Code postMessage bridge and mounts the Lit extension-app
 
-import './styles/preview.css';
+import './styles/main.css';
 
 // Import the Lit root application
 import './extension-app.js';
@@ -23,31 +23,43 @@ root.appendChild(app);
 // ─────────────────────────────────────────────────────────────────────────────
 //  Message Router (from VS Code extension host)
 // ─────────────────────────────────────────────────────────────────────────────
+let updateTimeout = null;
+let pendingUpdate = null;
+
 window.addEventListener('message', ({ data }) => {
   switch (data.type) {
     case 'update':
-      app.activeFile = { path: data.path, content: data.content, type: 'file' };
-      app.files = data.workspaceFiles || [];
-      if (!app.files.find(f => f.path === data.path)) {
-        app.files.push(app.activeFile);
-      }
-      app.contentType = data.contentType || '';
-      app.activeNodePath = null;
-      
-      // Load Swagger CSS if needed
-      if (app.contentType === 'swagger' && window.__ASSETS__?.swaggerCssUri) {
-        if (!document.getElementById('swagger-css')) {
-          const link = document.createElement('link');
-          link.id = 'swagger-css';
-          link.rel = 'stylesheet';
-          link.href = window.__ASSETS__.swaggerCssUri;
-          document.head.appendChild(link);
-        }
-      }
+      pendingUpdate = data;
+      if (updateTimeout) clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(() => {
+        const u = pendingUpdate;
+        if (!u) return;
 
-      // Update export state
-      setContentType(app.contentType);
-      setFileName(data.filename || 'preview');
+        app.activeFile = { path: u.path, content: u.content, type: 'file' };
+        app.files = u.workspaceFiles || [];
+        if (!app.files.find(f => f.path === u.path)) {
+          app.files.push(app.activeFile);
+        }
+        app.contentType = u.contentType || '';
+        app.activeNodePath = null;
+        
+        // Load Swagger CSS if needed
+        if (app.contentType === 'swagger' && window.__ASSETS__?.swaggerCssUri) {
+          if (!document.getElementById('swagger-css')) {
+            const link = document.createElement('link');
+            link.id = 'swagger-css';
+            link.rel = 'stylesheet';
+            link.href = window.__ASSETS__.swaggerCssUri;
+            document.head.appendChild(link);
+          }
+        }
+
+        // Update export state
+        setContentType(app.contentType);
+        setFileName(u.filename || 'preview');
+        
+        pendingUpdate = null;
+      }, 50);
       break;
 
     case 'scroll-to-node':

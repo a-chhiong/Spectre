@@ -12,10 +12,11 @@ import { getNonce } from './utils/nonce';
 type ExportFormat = 'svg' | 'png' | 'html' | 'pdf';
 
 interface ExportMessage {
-  type: 'export-svg' | 'export-png' | 'export-html' | 'export-pdf' | 'webview-ready' | 'error';
+  type: 'export-svg' | 'export-png' | 'export-html' | 'export-pdf' | 'webview-ready' | 'error' | 'open-file';
   data?: string;          // base64 or raw string
   suggestedName?: string;
   message?: string;       // for type: 'error'
+  path?: string;          // path for open-file
 }
 
 // ─── PreviewPanel ─────────────────────────────────────────────────────────────
@@ -226,6 +227,29 @@ export class PreviewPanel {
       case 'error':
         console.error('[Spectre webview error]', msg.message);
         break;
+
+      case 'open-file': {
+        if (!msg.path) { break; }
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        let fileUri: vscode.Uri;
+        if (workspaceFolders && workspaceFolders.length > 0) {
+          if (path.isAbsolute(msg.path)) {
+            fileUri = vscode.Uri.file(msg.path);
+          } else {
+            fileUri = vscode.Uri.joinPath(workspaceFolders[0].uri, msg.path);
+          }
+        } else {
+          fileUri = vscode.Uri.file(msg.path);
+        }
+        try {
+          const doc = await vscode.workspace.openTextDocument(fileUri);
+          await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
+        } catch (err) {
+          console.error('[Spectre] Failed to open file:', msg.path, err);
+          vscode.window.showErrorMessage(`Spectre: Failed to open file "${msg.path}"`);
+        }
+        break;
+      }
 
       // ── Export messages ───────────────────────────────────────────────────────
       case 'export-svg':

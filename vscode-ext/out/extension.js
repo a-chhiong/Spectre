@@ -2719,6 +2719,30 @@ var PreviewPanel = class _PreviewPanel {
       case "error":
         console.error("[Spectre webview error]", msg.message);
         break;
+      case "open-file": {
+        if (!msg.path) {
+          break;
+        }
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        let fileUri;
+        if (workspaceFolders && workspaceFolders.length > 0) {
+          if (path3.isAbsolute(msg.path)) {
+            fileUri = vscode.Uri.file(msg.path);
+          } else {
+            fileUri = vscode.Uri.joinPath(workspaceFolders[0].uri, msg.path);
+          }
+        } else {
+          fileUri = vscode.Uri.file(msg.path);
+        }
+        try {
+          const doc = await vscode.workspace.openTextDocument(fileUri);
+          await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
+        } catch (err) {
+          console.error("[Spectre] Failed to open file:", msg.path, err);
+          vscode.window.showErrorMessage(`Spectre: Failed to open file "${msg.path}"`);
+        }
+        break;
+      }
       case "export-svg":
         await this._saveExport(msg, "SVG files", ["svg"], msg.suggestedName ?? "diagram.svg");
         break;
@@ -2830,26 +2854,6 @@ function activate(context) {
   context.subscriptions.push(
     vscode2.commands.registerCommand("spectre.openPreview", () => {
       PreviewPanel.createOrShow(extensionUri);
-    })
-  );
-  context.subscriptions.push(
-    vscode2.commands.registerCommand("spectre.exportSVG", () => {
-      PreviewPanel.triggerExport("svg");
-    })
-  );
-  context.subscriptions.push(
-    vscode2.commands.registerCommand("spectre.exportPNG", () => {
-      PreviewPanel.triggerExport("png");
-    })
-  );
-  context.subscriptions.push(
-    vscode2.commands.registerCommand("spectre.exportHTML", () => {
-      PreviewPanel.triggerExport("html");
-    })
-  );
-  context.subscriptions.push(
-    vscode2.commands.registerCommand("spectre.exportPDF", () => {
-      PreviewPanel.triggerExport("pdf");
     })
   );
   context.subscriptions.push(

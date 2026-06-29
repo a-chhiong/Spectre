@@ -8,6 +8,7 @@ import '@spectre/core/components/markdown-viewer.js';
 import '@spectre/core/components/dbml-viewer.js';
 import '@spectre/core/components/diagram-viewer.js';
 import '@spectre/core/components/swagger-viewer.js';
+import '@spectre/core/components/tool-bar.js';
 
 export class CodeViewer extends LitElement {
   static properties = {
